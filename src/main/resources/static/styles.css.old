@@ -1,0 +1,450 @@
+/* Modern CSS Variables for consistent theming */
+:root {
+    --primary-color: #667eea;
+    --secondary-color: #764ba2;
+    --accent-color: #f093fb;
+    --text-color: #333;
+    --bg-color: #f8fafc;
+    --card-bg: #ffffff;
+    --shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --border-radius: 12px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: var(--text-color);
+    min-height: 100vh;
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+header h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    font-weight: 300;
+}
+
+/* Desktop-optimized main layout */
+main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 500px 1fr;
+    grid-template-rows: auto auto 1fr;
+    gap: 1.5rem;
+    align-items: start;
+    max-height: calc(100vh - 150px);
+}
+
+/* Left column - controls */
+.card:first-child {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    max-height: calc(100vh - 180px);
+    overflow-y: auto;
+    position: sticky;
+    top: 0;
+}
+
+/* Right top - weather data results */
+.card:nth-child(2) {
+    grid-column: 2;
+    grid-row: 1;
+    min-height: 400px;
+    max-height: calc(60vh - 90px);
+    overflow-y: auto;
+}
+
+/* Right bottom - info card */
+.info-card {
+    grid-column: 2;
+    grid-row: 2;
+    max-height: calc(40vh - 90px);
+    overflow-y: auto;
+}
+
+.card, .info-card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: var(--transition);
+}
+
+.card:hover, .info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.card h2, .info-card h3 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: var(--transition);
+    background: #f8fafc;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.button-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin: 1.5rem 0;
+}
+
+.quick-test-section {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 2px solid #e2e8f0;
+}
+
+.quick-test-section h4 {
+    margin-bottom: 0.75rem;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+.quick-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+}
+
+.message {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: center;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    transition: var(--transition);
+}
+
+.message:empty {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.message:empty::after {
+    content: "Click a button to fetch data from the API";
+}
+
+button {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    width: 100%;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #64748b, #475569) !important;
+    box-shadow: 0 4px 15px rgba(100, 116, 139, 0.3) !important;
+}
+
+.btn-secondary:hover {
+    box-shadow: 0 8px 25px rgba(100, 116, 139, 0.4) !important;
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #0ea5e9, #0284c7) !important;
+    box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3) !important;
+}
+
+.btn-info:hover {
+    box-shadow: 0 8px 25px rgba(14, 165, 233, 0.4) !important;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #22c55e, #16a34a) !important;
+    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3) !important;
+}
+
+.btn-success:hover {
+    box-shadow: 0 8px 25px rgba(34, 197, 94, 0.4) !important;
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3) !important;
+}
+
+.btn-warning:hover {
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4) !important;
+}
+
+.btn-test {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3) !important;
+    font-size: 0.85rem !important;
+    padding: 0.6rem 1rem !important;
+}
+
+.btn-test:hover {
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4) !important;
+}
+
+.analysis-link {
+    background: linear-gradient(135deg, #ec4899, #db2777) !important;
+    box-shadow: 0 4px 15px rgba(236, 72, 153, 0.3) !important;
+    text-decoration: none;
+    display: inline-block;
+    margin: 1rem 0;
+    text-align: center;
+}
+
+.analysis-link:hover {
+    box-shadow: 0 8px 25px rgba(236, 72, 153, 0.4) !important;
+    text-decoration: none;
+    color: white;
+}
+
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: var(--primary-color);
+    margin: 1rem 0;
+}
+
+.spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #f3f4f6;
+    border-top: 3px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.hidden {
+    display: none !important;
+}
+
+.weather-results {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+    border: 1px solid #e2e8f0;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.weather-results:empty {
+    display: none;
+}
+
+.info-card ul {
+    list-style: none;
+}
+
+.info-card li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.info-card li:last-child {
+    border-bottom: none;
+}
+
+footer {
+    text-align: center;
+    padding: 2rem;
+    color: white;
+    opacity: 0.8;
+    margin-top: 2rem;
+    flex-shrink: 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 1200px) {
+    main {
+        grid-template-columns: 450px 1fr;
+    }
+}
+
+@media (max-width: 1024px) {
+    main {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        max-height: none;
+    }
+    
+    .card:first-child {
+        grid-column: 1;
+        grid-row: 1;
+        position: static;
+        max-height: none;
+    }
+    
+    .card:nth-child(2) {
+        grid-column: 1;
+        grid-row: 2;
+        max-height: none;
+    }
+    
+    .info-card {
+        grid-column: 1;
+        grid-row: 3;
+        max-height: none;
+    }
+    
+    .button-group {
+        grid-template-columns: 1fr;
+    }
+    
+    .quick-buttons {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    header h1 {
+        font-size: 2.5rem;
+    }
+    
+    .card, .info-card {
+        padding: 1rem;
+    }
+}
+
+/* Additional styling for seasonal analysis page */
+.seasonal-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.seasonal-results {
+    min-height: 400px;
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid #e2e8f0;
+}
+
+.back-link {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: inline-block;
+    opacity: 0.9;
+    transition: var(--transition);
+}
+
+.back-link:hover {
+    opacity: 1;
+    text-decoration: underline;
+    color: white;
+}
+
+/* Chart styling improvements */
+.statistics-chart {
+    margin: 0;
+}
+
+.chart-container {
+    background: white !important;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.bar-chart {
+    padding: 1rem 0;
+}
+
+.summary-stats {
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0;
+}

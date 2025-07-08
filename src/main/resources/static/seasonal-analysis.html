@@ -3,81 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clime - Seasonal Rainfall Analysis</title>
+    <title>Seasonal Rainfall Analysis - Clime</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🌦️ Seasonal Rainfall Analysis</h1>
-            <p class="subtitle">Analyze Summer and Winter Rainfall Patterns</p>
-            <div class="navigation">
-                <a href="index.html" class="nav-link">← Back to Main Dashboard</a>
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="row">
+            <div class="col-12">
+                <header class="text-center py-4">
+                    <h1 class="display-4">🌦️ Seasonal Rainfall Days Analysis</h1>
+                    <p class="lead">Explore Summer and Winter Rainy Day Patterns</p>
+                    <nav>
+                        <a href="index.html" class="btn btn-outline-primary me-2">
+                            ← Back to Main Dashboard
+                        </a>
+                        <a href="rainfall-analysis.html" class="btn btn-outline-success">
+                            💧 Rainfall Amount Analysis
+                        </a>
+                    </nav>
+                </header>
             </div>
-        </header>
+        </div>
         
-        <main>
-            <div class="card">
-                <h2>🔑 Authentication</h2>
-                <div class="form-group">
-                    <label for="seasonalKey">Unscramble Key:</label>
-                    <input type="text" id="seasonalKey" class="form-control" placeholder="Enter unscramble key" value="">
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>📊 Seasonal Analysis Controls</h2>
-                <div id="seasonalLoading" class="loading hidden">
-                    <div class="spinner"></div>
-                    <p>Loading seasonal data...</p>
-                </div>
-                <div id="seasonalMessage" class="message"></div>
-                
-                <div class="seasonal-controls">
-                    <div class="control-section">
-                        <h3>☀️ Summer Analysis (March - August)</h3>
-                        <p>Analyze rainfall patterns during summer months</p>
-                        <button id="showSummerRainyDaysButton" class="btn-warning">Show Summer Rainy Days Chart</button>
+        <!-- Controls Section -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-lg-6 col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">🔑 Analysis Controls</h5>
                     </div>
-                    
-                    <div class="control-section">
-                        <h3>❄️ Winter Analysis (September - February)</h3>
-                        <p>Analyze rainfall patterns during winter months</p>
-                        <button id="showWinterRainyDaysButton" class="btn-info">Show Winter Rainy Days Chart</button>
-                    </div>
-                    
-                    <div class="control-section">
-                        <h3>📈 Comparative Analysis</h3>
-                        <p>Compare seasonal patterns side by side</p>
-                        <button id="showComparativeAnalysisButton" class="btn-success">Show Seasonal Comparison</button>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="seasonalKey" class="form-label">Unscramble Key:</label>
+                            <input type="text" id="seasonalKey" class="form-control" placeholder="Enter your unscramble key" value="">
+                        </div>
+                        
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <button id="showSummerRainyDaysButton" class="btn btn-warning w-100">
+                                    ☀️ Summer Rainy Days
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button id="showWinterRainyDaysButton" class="btn btn-info w-100">
+                                    ❄️ Winter Rainy Days
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="loading" class="text-center mt-3 d-none">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Loading analysis...</p>
+                        </div>
+                        
+                        <div id="message" class="alert alert-info mt-3 d-none"></div>
                     </div>
                 </div>
             </div>
-            
-            <div class="card">
-                <h2>📈 Analysis Results</h2>
-                <div id="seasonalResults" class="seasonal-results">
-                    <p class="placeholder-text">Select an analysis option above to view seasonal rainfall data and charts.</p>
-                </div>
-            </div>
-            
-            <div class="info-card">
-                <h3>📋 About Seasonal Analysis</h3>
-                <ul>
-                    <li><strong>Summer Season:</strong> March through August (6 months)</li>
-                    <li><strong>Winter Season:</strong> September through February (6 months)</li>
-                    <li><strong>Data Range:</strong> 2005-2025 (20+ years of data)</li>
-                    <li><strong>Metrics:</strong> Rainy days count, percentage, and trends</li>
-                    <li><strong>Visualization:</strong> Interactive bar charts with trend lines</li>
-                </ul>
-            </div>
-        </main>
+        </div>
         
-        <footer>
-            <p>&copy; 2025 Clime Application - Seasonal Rainfall Analysis Module</p>
+        <!-- Results Section -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">📊 Analysis Results</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="seasonalResults" class="seasonal-results">
+                            <div class="text-center text-muted py-5">
+                                <i class="fas fa-chart-bar fa-3x mb-3"></i>
+                                <h5>Select an analysis option above to view seasonal rainfall patterns</h5>
+                                <p>Charts will display rainfall trends, statistics, and patterns for the selected season.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Information Section -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">☀️ Summer Season (Mar-Aug)</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li><strong>Months:</strong> March to August</li>
+                            <li><strong>Climate:</strong> Warmer temperatures, variable rainfall</li>
+                            <li><strong>Analysis:</strong> Shows rainfall patterns during the warmer months</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="card-title mb-0">❄️ Winter Season (Sep-Feb)</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li><strong>Months:</strong> September to February</li>
+                            <li><strong>Climate:</strong> Cooler temperatures, different rainfall patterns</li>
+                            <li><strong>Analysis:</strong> Shows rainfall patterns during the cooler months</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="row mt-5">
+            <div class="col-12">
+                <div class="text-center py-4 border-top">
+                    <p class="mb-0 text-muted">&copy; 2025 Clime Application - Seasonal Analysis Module</p>
+                </div>
+            </div>
         </footer>
     </div>
     
-    <script src="seasonal-analysis.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="seasonal.js"></script>
 </body>
 </html>

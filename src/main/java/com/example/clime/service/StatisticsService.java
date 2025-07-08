@@ -322,17 +322,9 @@ public class StatisticsService {
     }
     
     private int getSeasonYear(int year, int month, String season) {
-        // Debug logging
-        if (year == 2020 && (month == 3 || month == 7)) {
-            System.out.println("DEBUG getSeasonYear: year=" + year + ", month=" + month + ", season=" + season);
-        }
-        
         if ("summer".equals(season)) {
             // Summer: Mar-Aug (months 3-8)
             if (month >= 3 && month <= 8) {
-                if (year == 2020 && month == 7) {
-                    System.out.println("DEBUG: Returning year " + year + " for summer month " + month);
-                }
                 return year;
             }
         } else if ("winter".equals(season)) {

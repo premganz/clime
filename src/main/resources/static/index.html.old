@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clime - Landing Page</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="trendline.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌟 Welcome to Clime</h1>
+            <p class="subtitle">Your Modern Spring Boot Application</p>
+        </header>
+        
+        <main>
+            <div class="card">
+                <h2>API Response</h2>
+                <div id="loading" class="loading hidden">
+                    <div class="spinner"></div>
+                    <p>Loading...</p>
+                </div>
+                <div id="message" class="message"></div>
+                <button id="fetchButton" class="btn-primary">Fetch Hello World</button>
+                <button id="healthButton" class="btn-secondary">Check Health</button>
+            </div>
+            
+            <div class="card">
+                <h2>🌦️ Weather Data API Tester</h2>
+                
+                <div class="form-group">
+                    <label for="key">🔑 Unscramble Key:</label>
+                    <input type="text" id="key" class="form-control" placeholder="Enter unscramble key" value="">
+                </div>
+                
+                <div class="form-group">
+                    <label for="year">Year:</label>
+                    <select id="year" class="form-control">
+                        <option value="">Select Year</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="month">Month:</label>
+                    <select id="month" class="form-control">
+                        <option value="">Select Month</option>
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                </div>
+                
+                <div class="button-group">
+                    <button id="fetchWeatherButton" class="btn-primary">Get Weather Data (HTML)</button>
+                    <button id="fetchWeatherJsonButton" class="btn-secondary">Get Weather Data (JSON)</button>
+                    <button id="getStatsButton" class="btn-info">Get Data Stats</button>
+                    <button id="showRainyDaysButton" class="btn-success">Show Rainy Days</button>
+                </div>
+                
+                <div class="analysis-links">
+                    <h4>📊 Advanced Analysis</h4>
+                    <p><small>Explore detailed seasonal rainfall patterns:</small></p>
+                    <div class="link-buttons">
+                        <a href="seasonal-analysis.html" class="btn-analysis">🌦️ Seasonal Analysis Dashboard</a>
+                    </div>
+                </div>
+                
+                <div class="quick-test-section">
+                    <h4>🚀 Quick Test Examples</h4>
+                    <p><small>Click any button below to auto-fill the form and test the API:</small></p>
+                    <div class="quick-buttons">
+                        <button id="testSep2005" class="btn-test">Test Sep 2005</button>
+                        <button id="testJan2010" class="btn-test">Test Jan 2010</button>
+                        <button id="testJun2025" class="btn-test">Test Jun 2025</button>
+                        <button id="testInvalidKey" class="btn-test">Test Invalid Key</button>
+                    </div>
+                </div>
+                
+                <div id="weatherData" class="weather-results"></div>
+            </div>
+            
+            <div class="info-card">
+                <h3>🚀 Features</h3>
+                <ul>
+                    <li>✅ Spring Boot REST API</li>
+                    <li>✅ Modern Fetch API (AJAX replacement)</li>
+                    <li>✅ Responsive Design</li>
+                    <li>✅ Health Check Endpoint</li>
+                    <li>🌦️ Weather Data Processing</li>
+                    <li>🔒 Scrambled Data with Key Protection</li>
+                    <li>⚠️ Anomaly Detection</li>
+                </ul>
+            </div>
+        </main>
+        
+        <footer>
+            <p>&copy; 2025 Clime Application. Built with Spring Boot & Modern JavaScript.</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Ultra-simple test - just try to make the buttons work
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // Test fetch button
+            var fetchBtn = document.getElementById('fetchButton');
+            if (fetchBtn) {
+                fetchBtn.onclick = function() {
+                    fetch('/api/landing')
+                        .then(function(response) { return response.text(); })
+                        .then(function(data) {
+                            var messageEl = document.getElementById('message');
+                            if (messageEl) {
+                                messageEl.textContent = data;
+                                messageEl.style.color = 'green';
+                                messageEl.style.fontSize = '16px';
+                                messageEl.style.fontWeight = 'bold';
+                            }
+                        })
+                        .catch(function(error) {
+                            var messageEl = document.getElementById('message');
+                            if (messageEl) {
+                                messageEl.textContent = 'Error: ' + error.message;
+                                messageEl.style.color = 'red';
+                            }
+                        });
+                };
+            }
+            
+            // Test health button
+            var healthBtn = document.getElementById('healthButton');
+            if (healthBtn) {
+                healthBtn.onclick = function() {
+                    fetch('/api/health')
+                        .then(function(response) { return response.text(); })
+                        .then(function(data) {
+                            var messageEl = document.getElementById('message');
+                            if (messageEl) {
+                                messageEl.textContent = data;
+                                messageEl.style.color = 'blue';
+                                messageEl.style.fontSize = '16px';
+                                messageEl.style.fontWeight = 'bold';
+                            }
+                        });
+                };
+            }
+            
+            // Simple year dropdown population
+            var yearSelect = document.getElementById('year');
+            if (yearSelect) {
+                for (var y = 2005; y <= 2025; y++) {
+                    var option = document.createElement('option');
+                    option.value = y;
+                    option.textContent = y;
+                    yearSelect.appendChild(option);
+                }
+            }
+            
+            // Simple test button - should fetch actual weather data
+            var testBtn = document.getElementById('testJan2010');
+            if (testBtn) {
+                testBtn.onclick = function() {
+                    console.log('Test Jan 2010 button clicked!');
+                    
+                    // Auto-fill form
+                    if (yearSelect) yearSelect.value = '2010';
+                    var monthSelect = document.getElementById('month');
+                    if (monthSelect) monthSelect.value = '1';
+                    
+                    var messageEl = document.getElementById('message');
+                    if (messageEl) {
+                        messageEl.textContent = '🧪 Testing Jan 2010 - fetching weather data...';
+                        messageEl.style.color = 'purple';
+                        messageEl.style.fontSize = '16px';
+                    }
+                    
+                    console.log('About to fetch weather data...');
+                    
+                    // Actually fetch the weather data
+                    setTimeout(function() {
+                        var url = '/api/weather/data?year=2010&month=1&key=' + encodeURIComponent(document.getElementById('key').value) + '&format=html';
+                        console.log('Fetching URL:', url);
+                        
+                        fetch(url)
+                            .then(function(response) { 
+                                console.log('Response received:', response.status);
+                                return response.text(); 
+                            })
+                            .then(function(data) {
+                                console.log('Data received:', data.length, 'characters');
+                                var weatherDataEl = document.getElementById('weatherData');
+                                console.log('Weather data element:', weatherDataEl);
+                                
+                                if (weatherDataEl) {
+                                    weatherDataEl.innerHTML = data;
+                                    console.log('Data inserted into weatherData element');
+                                } else {
+                                    console.error('weatherData element not found!');
+                                }
+                                
+                                if (messageEl) {
+                                    messageEl.textContent = '✅ Jan 2010 weather data loaded successfully!';
+                                    messageEl.style.color = 'green';
+                                }
+                            })
+                            .catch(function(error) {
+                                console.error('Fetch error:', error);
+                                if (messageEl) {
+                                    messageEl.textContent = '❌ Error loading Jan 2010 data: ' + error.message;
+                                    messageEl.style.color = 'red';
+                                }
+                            });
+                    }, 500);
+                };
+                console.log('Test Jan 2010 button handler set');
+            } else {
+                console.error('Test Jan 2010 button not found!');
+            }
+            
+            // Add other test buttons
+            var testSep2005 = document.getElementById('testSep2005');
+            if (testSep2005) {
+                testSep2005.onclick = function() {
+                    var key = document.getElementById('key').value;
+                    if (!key) { alert('Please enter unscramble key first'); return; }
+                    runQuickTest('2005', '9', key, 'Sep 2005');
+                };
+            }
+            
+            var testJun2025 = document.getElementById('testJun2025');
+            if (testJun2025) {
+                testJun2025.onclick = function() {
+                    var key = document.getElementById('key').value;
+                    if (!key) { alert('Please enter unscramble key first'); return; }
+                    runQuickTest('2025', '6', key, 'Jun 2025');
+                };
+            }
+            
+            var testInvalidKey = document.getElementById('testInvalidKey');
+            if (testInvalidKey) {
+                testInvalidKey.onclick = function() {
+                    runQuickTest('2010', '1', 'INVALID_KEY', 'Invalid Key Test');
+                };
+            }
+            
+            // Helper function for quick tests
+            function runQuickTest(year, month, key, testName) {
+                // Auto-fill form
+                if (yearSelect) yearSelect.value = year;
+                var monthSelect = document.getElementById('month');
+                if (monthSelect) monthSelect.value = month;
+                var keyInput = document.getElementById('key');
+                if (keyInput) keyInput.value = key;
+                
+                var messageEl = document.getElementById('message');
+                if (messageEl) {
+                    messageEl.textContent = '🧪 Testing ' + testName + ' - fetching weather data...';
+                    messageEl.style.color = 'purple';
+                    messageEl.style.fontSize = '16px';
+                }
+                
+                // Fetch the weather data
+                setTimeout(function() {
+                    var url = '/api/weather/data?year=' + year + '&month=' + month + '&key=' + encodeURIComponent(key) + '&format=html';
+                    fetch(url)
+                        .then(function(response) { return response.text(); })
+                        .then(function(data) {
+                            var weatherDataEl = document.getElementById('weatherData');
+                            if (weatherDataEl) {
+                                weatherDataEl.innerHTML = data;
+                            }
+                            if (messageEl) {
+                                if (key === 'INVALID_KEY') {
+                                    messageEl.textContent = '❌ ' + testName + ' - Should show error (invalid key)';
+                                    messageEl.style.color = 'orange';
+                                } else {
+                                    messageEl.textContent = '✅ ' + testName + ' weather data loaded successfully!';
+                                    messageEl.style.color = 'green';
+                                }
+                            }
+                        })
+                        .catch(function(error) {
+                            if (messageEl) {
+                                messageEl.textContent = '❌ Error loading ' + testName + ' data: ' + error.message;
+                                messageEl.style.color = 'red';
+                            }
+                        });
+                }, 500);
+            }
+        });
+        
+        // Add weather data buttons functionality
+        function addWeatherButtonHandlers() {
+            var fetchWeatherBtn = document.getElementById('fetchWeatherButton');
+            if (fetchWeatherBtn) {
+                fetchWeatherBtn.onclick = function() {
+                    var year = document.getElementById('year') ? document.getElementById('year').value : '';
+                    var month = document.getElementById('month') ? document.getElementById('month').value : '';
+                    var key = document.getElementById('key') ? document.getElementById('key').value : '';
+                    
+                    if (!year || !month || !key) {
+                        var messageEl = document.getElementById('message');
+                        if (messageEl) {
+                            messageEl.textContent = '❌ Please select year, month, and enter the unscramble key';
+                            messageEl.style.color = 'red';
+                        }
+                        return;
+                    }
+                    
+                    var messageEl = document.getElementById('message');
+                    if (messageEl) {
+                        messageEl.textContent = '🔄 Fetching weather data for ' + year + '-' + month + '...';
+                        messageEl.style.color = 'blue';
+                    }
+                    
+                    var url = '/api/weather/data?year=' + year + '&month=' + month + '&key=' + encodeURIComponent(key) + '&format=html';
+                    fetch(url)
+                        .then(function(response) { return response.text(); })
+                        .then(function(data) {
+                            var weatherDataEl = document.getElementById('weatherData');
+                            if (weatherDataEl) {
+                                weatherDataEl.innerHTML = data;
+                            }
+                            if (messageEl) {
+                                messageEl.textContent = '✅ Weather data loaded for ' + year + '-' + month;
+                                messageEl.style.color = 'green';
+                            }
+                        })
+                        .catch(function(error) {
+                            if (messageEl) {
+                                messageEl.textContent = '❌ Error: ' + error.message;
+                                messageEl.style.color = 'red';
+                            }
+                        });
+                };
+            }
+            
+            var fetchWeatherJsonBtn = document.getElementById('fetchWeatherJsonButton');
+            if (fetchWeatherJsonBtn) {
+                fetchWeatherJsonBtn.onclick = function() {
+                    var year = document.getElementById('year') ? document.getElementById('year').value : '';
+                    var month = document.getElementById('month') ? document.getElementById('month').value : '';
+                    var key = document.getElementById('key') ? document.getElementById('key').value : '';
+                    
+                    if (!year || !month || !key) {
+                        var messageEl = document.getElementById('message');
+                        if (messageEl) {
+                            messageEl.textContent = '❌ Please select year, month, and enter the unscramble key';
+                            messageEl.style.color = 'red';
+                        }
+                        return;
+                    }
+                    
+                    var messageEl = document.getElementById('message');
+                    if (messageEl) {
+                        messageEl.textContent = '🔄 Fetching weather data (JSON) for ' + year + '-' + month + '...';
+                        messageEl.style.color = 'blue';
+                    }
+                    
+                    var url = '/api/weather/data?year=' + year + '&month=' + month + '&key=' + encodeURIComponent(key) + '&format=json';
+                    fetch(url)
+                        .then(function(response) { return response.text(); })
+                        .then(function(data) {
+                            var weatherDataEl = document.getElementById('weatherData');
+                            if (weatherDataEl) {
+                                weatherDataEl.innerHTML = '<pre>' + data + '</pre>';
+                            }
+                            if (messageEl) {
+                                messageEl.textContent = '✅ Weather data (JSON) loaded for ' + year + '-' + month;
+                                messageEl.style.color = 'green';
+                            }
+                        })
+                        .catch(function(error) {
+                            if (messageEl) {
+                                messageEl.textContent = '❌ Error: ' + error.message;
+                                messageEl.style.color = 'red';
+                            }
+                        });
+                };
+            }
+            
+            var getStatsBtn = document.getElementById('getStatsButton');
+            if (getStatsBtn) {
+                getStatsBtn.onclick = function() {
+                    var key = document.getElementById('key') ? document.getElementById('key').value : '';
+                    
+                    if (!key) {
+                        var messageEl = document.getElementById('message');
+                        if (messageEl) {
+                            messageEl.textContent = '❌ Please enter the unscramble key';
+                            messageEl.style.color = 'red';
+                        }
+                        return;
+                    }
+                    
+                    var messageEl = document.getElementById('message');
+                    if (messageEl) {
+                        messageEl.textContent = '🔄 Fetching weather statistics...';
+                        messageEl.style.color = 'blue';
+                    }
+                    
+                    var url = '/api/weather/stats?key=' + encodeURIComponent(key);
+                    fetch(url)
+                        .then(function(response) { return response.text(); })
+                        .then(function(data) {
+                            var weatherDataEl = document.getElementById('weatherData');
+                            if (weatherDataEl) {
+                                weatherDataEl.innerHTML = data;
+                            }
+                            if (messageEl) {
+                                messageEl.textContent = '✅ Weather statistics loaded';
+                                messageEl.style.color = 'green';
+                            }
+                        })
+                        .catch(function(error) {
+                            if (messageEl) {
+                                messageEl.textContent = '❌ Error: ' + error.message;
+                                messageEl.style.color = 'red';
+                            }
+                        });
+                };
+            }
+            
+            var showRainyDaysBtn = document.getElementById('showRainyDaysButton');
+            if (showRainyDaysBtn) {
+                showRainyDaysBtn.onclick = function() {
+                    var key = document.getElementById('key') ? document.getElementById('key').value : '';
+                    
+                    if (!key) {
+                        var messageEl = document.getElementById('message');
+                        if (messageEl) {
+                            messageEl.textContent = '❌ Please enter the unscramble key';
+                            messageEl.style.color = 'red';
+                        }
+                        return;
+                    }
+                    
+                    var messageEl = document.getElementById('message');
+                    if (messageEl) {
+                        messageEl.textContent = '🔄 Generating rainy days chart...';
+                        messageEl.style.color = 'blue';
+                    }
+                    
+                    var url = '/api/statistics/rainy-days/chart?key=' + encodeURIComponent(key);
+                    fetch(url)
+                        .then(function(response) { return response.text(); })
+                        .then(function(data) {
+                            var weatherDataEl = document.getElementById('weatherData');
+                            if (weatherDataEl) {
+                                weatherDataEl.innerHTML = data;
+                            }
+                            if (messageEl) {
+                                messageEl.textContent = '✅ Rainy days chart loaded';
+                                messageEl.style.color = 'green';
+                            }
+                        })
+                        .catch(function(error) {
+                            if (messageEl) {
+                                messageEl.textContent = '❌ Error: ' + error.message;
+                                messageEl.style.color = 'red';
+                            }
+                        });
+                };
+            }
+            
+            var copyKeyBtn = document.getElementById('copyKeyButton');
+            if (copyKeyBtn) {
+                copyKeyBtn.onclick = function() {
+                    var keyInput = document.getElementById('key');
+                    if (keyInput) {
+                        keyInput.select();
+                        try {
+                            navigator.clipboard.writeText(keyInput.value).then(function() {
+                                var messageEl = document.getElementById('message');
+                                if (messageEl) {
+                                    messageEl.textContent = '🔑 Key copied to clipboard!';
+                                    messageEl.style.color = 'green';
+                                }
+                            }).catch(function() {
+                                document.execCommand('copy');
+                                var messageEl = document.getElementById('message');
+                                if (messageEl) {
+                                    messageEl.textContent = '🔑 Key copied to clipboard!';
+                                    messageEl.style.color = 'green';
+                                }
+                            });
+                        } catch (err) {
+                            document.execCommand('copy');
+                            var messageEl = document.getElementById('message');
+                            if (messageEl) {
+                                messageEl.textContent = '🔑 Key copied to clipboard!';
+                                messageEl.style.color = 'green';
+                            }
+                        }
+                    }
+                };
+            }
+        }
+        
+        // Call the additional setup
+        document.addEventListener('DOMContentLoaded', addWeatherButtonHandlers);
+    </script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clime - Seasonal Rainfall Analysis</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌦️ Seasonal Rainfall Analysis</h1>
+            <p class="subtitle">Analyze Summer and Winter Rainfall Patterns</p>
+            <div class="navigation">
+                <a href="index.html" class="nav-link">← Back to Main Dashboard</a>
+            </div>
+        </header>
+        
+        <main>
+            <div class="card">
+                <h2>🔑 Authentication</h2>
+                <div class="form-group">
+                    <label for="seasonalKey">Unscramble Key:</label>
+                    <input type="text" id="seasonalKey" class="form-control" placeholder="Enter unscramble key" value="">
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📊 Seasonal Analysis Controls</h2>
+                <div id="seasonalLoading" class="loading hidden">
+                    <div class="spinner"></div>
+                    <p>Loading seasonal data...</p>
+                </div>
+                <div id="seasonalMessage" class="message"></div>
+                
+                <div class="seasonal-controls">
+                    <div class="control-section">
+                        <h3>☀️ Summer Analysis (March - August)</h3>
+                        <p>Analyze rainfall patterns during summer months</p>
+                        <button id="showSummerRainyDaysButton" class="btn-warning">Show Summer Rainy Days Chart</button>
+                    </div>
+                    
+                    <div class="control-section">
+                        <h3>❄️ Winter Analysis (September - February)</h3>
+                        <p>Analyze rainfall patterns during winter months</p>
+                        <button id="showWinterRainyDaysButton" class="btn-info">Show Winter Rainy Days Chart</button>
+                    </div>
+                    
+                    <div class="control-section">
+                        <h3>📈 Comparative Analysis</h3>
+                        <p>Compare seasonal patterns side by side</p>
+                        <button id="showComparativeAnalysisButton" class="btn-success">Show Seasonal Comparison</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>📈 Analysis Results</h2>
+                <div id="seasonalResults" class="seasonal-results">
+                    <p class="placeholder-text">Select an analysis option above to view seasonal rainfall data and charts.</p>
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <h3>📋 About Seasonal Analysis</h3>
+                <ul>
+                    <li><strong>Summer Season:</strong> March through August (6 months)</li>
+                    <li><strong>Winter Season:</strong> September through February (6 months)</li>
+                    <li><strong>Data Range:</strong> 2005-2025 (20+ years of data)</li>
+                    <li><strong>Metrics:</strong> Rainy days count, percentage, and trends</li>
+                    <li><strong>Visualization:</strong> Interactive bar charts with trend lines</li>
+                </ul>
+            </div>
+        </main>
+        
+        <footer>
+            <p>&copy; 2025 Clime Application - Seasonal Rainfall Analysis Module</p>
+        </footer>
+    </div>
+    
+    <script src="seasonal-analysis.js"></script>
+</body>
+</html>

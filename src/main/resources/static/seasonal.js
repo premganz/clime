@@ -31,45 +31,44 @@ function setupSeasonalButtonHandlers() {
     
     const buttons = [
         ['showSummerRainyDaysButton', () => showSummerRainyDays()],
-        ['showWinterRainyDaysButton', () => showWinterRainyDays()],
-        ['showAllSeasonsButton', () => showAllSeasons()],
-        ['goBackButton', () => window.location.href = 'index.html']
+        ['showWinterRainyDaysButton', () => showWinterRainyDays()]
     ];
     
     buttons.forEach(([id, handler]) => {
         const button = document.getElementById(id);
         if (button) {
             button.onclick = handler;
-            console.log(`✅ Seasonal Setup: ${id}`);
+            console.log(`✅ Setup seasonal: ${id}`);
         } else {
-            console.error(`❌ Seasonal Missing: ${id}`);
+            console.error(`❌ Missing seasonal: ${id}`);
         }
     });
 }
 
-// Utility functions
+// Utility functions for seasonal analysis
 function showSeasonalMessage(text, isError = false) {
-    const messageEl = document.getElementById('seasonalMessage');
+    const messageEl = document.getElementById('message');
     if (messageEl) {
         messageEl.textContent = text;
-        messageEl.className = isError ? 'message error' : 'message';
+        messageEl.className = isError ? 'alert alert-danger mt-3' : 'alert alert-success mt-3';
+        messageEl.classList.remove('d-none');
     }
     console.log(isError ? '❌' : '✅', text);
 }
 
 function showSeasonalLoading() {
-    const loadingEl = document.getElementById('seasonalLoading');
-    if (loadingEl) loadingEl.classList.remove('hidden');
+    const loadingEl = document.getElementById('loading');
+    if (loadingEl) loadingEl.classList.remove('d-none');
 }
 
 function hideSeasonalLoading() {
-    const loadingEl = document.getElementById('seasonalLoading');
-    if (loadingEl) loadingEl.classList.add('hidden');
+    const loadingEl = document.getElementById('loading');
+    if (loadingEl) loadingEl.classList.add('d-none');
 }
 
-// Seasonal Analysis Functions
+// Summer Rainy Days Analysis
 function showSummerRainyDays() {
-    console.log('☀️ Showing summer rainy days statistics...');
+    console.log('☀️ Showing summer rainy days analysis...');
     const key = document.getElementById('seasonalKey').value;
     
     if (!key) {
@@ -78,7 +77,7 @@ function showSummerRainyDays() {
     }
     
     showSeasonalLoading();
-    showSeasonalMessage('Loading summer rainy days statistics...');
+    showSeasonalMessage('Loading summer rainy days analysis...');
     
     const baseUrl = getBaseUrl();
     fetch(`${baseUrl}/api/statistics/rainy-days/summer/chart?key=${encodeURIComponent(key)}`)
@@ -93,18 +92,19 @@ function showSummerRainyDays() {
             const resultsEl = document.getElementById('seasonalResults');
             if (resultsEl) {
                 resultsEl.innerHTML = html;
-                showSeasonalMessage('✅ Summer rainy days statistics loaded successfully!');
+                showSeasonalMessage('✅ Summer rainy days analysis loaded successfully!');
             }
         })
         .catch(error => {
             hideSeasonalLoading();
-            showSeasonalMessage(`❌ Error loading summer rainy days: ${error.message}`, true);
+            showSeasonalMessage(`❌ Error loading summer analysis: ${error.message}`, true);
             console.error('Summer rainy days error:', error);
         });
 }
 
+// Winter Rainy Days Analysis
 function showWinterRainyDays() {
-    console.log('❄️ Showing winter rainy days statistics...');
+    console.log('❄️ Showing winter rainy days analysis...');
     const key = document.getElementById('seasonalKey').value;
     
     if (!key) {
@@ -113,7 +113,7 @@ function showWinterRainyDays() {
     }
     
     showSeasonalLoading();
-    showSeasonalMessage('Loading winter rainy days statistics...');
+    showSeasonalMessage('Loading winter rainy days analysis...');
     
     const baseUrl = getBaseUrl();
     fetch(`${baseUrl}/api/statistics/rainy-days/winter/chart?key=${encodeURIComponent(key)}`)
@@ -128,62 +128,14 @@ function showWinterRainyDays() {
             const resultsEl = document.getElementById('seasonalResults');
             if (resultsEl) {
                 resultsEl.innerHTML = html;
-                showSeasonalMessage('✅ Winter rainy days statistics loaded successfully!');
+                showSeasonalMessage('✅ Winter rainy days analysis loaded successfully!');
             }
         })
         .catch(error => {
             hideSeasonalLoading();
-            showSeasonalMessage(`❌ Error loading winter rainy days: ${error.message}`, true);
+            showSeasonalMessage(`❌ Error loading winter analysis: ${error.message}`, true);
             console.error('Winter rainy days error:', error);
         });
-}
-
-function showAllSeasons() {
-    console.log('🌦️ Showing all seasons comparison...');
-    const key = document.getElementById('seasonalKey').value;
-    
-    if (!key) {
-        showSeasonalMessage('Please enter your unscramble key first', true);
-        return;
-    }
-    
-    showSeasonalLoading();
-    showSeasonalMessage('Loading seasonal comparison...');
-    
-    const baseUrl = getBaseUrl();
-    
-    // Load both summer and winter charts
-    Promise.all([
-        fetch(`${baseUrl}/api/statistics/rainy-days/summer/chart?key=${encodeURIComponent(key)}`),
-        fetch(`${baseUrl}/api/statistics/rainy-days/winter/chart?key=${encodeURIComponent(key)}`)
-    ])
-    .then(responses => {
-        if (!responses[0].ok || !responses[1].ok) {
-            throw new Error('One or more requests failed');
-        }
-        return Promise.all([responses[0].text(), responses[1].text()]);
-    })
-    .then(([summerHtml, winterHtml]) => {
-        hideSeasonalLoading();
-        const resultsEl = document.getElementById('seasonalResults');
-        if (resultsEl) {
-            resultsEl.innerHTML = `
-                <div class="seasonal-comparison">
-                    <h2>🌦️ Seasonal Comparison Dashboard</h2>
-                    <div class="season-charts">
-                        <div class="season-chart">${summerHtml}</div>
-                        <div class="season-chart">${winterHtml}</div>
-                    </div>
-                </div>
-            `;
-            showSeasonalMessage('✅ Seasonal comparison loaded successfully!');
-        }
-    })
-    .catch(error => {
-        hideSeasonalLoading();
-        showSeasonalMessage(`❌ Error loading seasonal comparison: ${error.message}`, true);
-        console.error('Seasonal comparison error:', error);
-    });
 }
 
 console.log('🌦️ Seasonal Analysis JS loaded completely');

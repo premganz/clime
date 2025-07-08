@@ -100,19 +100,20 @@ function showMessage(text, isError = false) {
     const messageEl = document.getElementById('message');
     if (messageEl) {
         messageEl.textContent = text;
-        messageEl.className = isError ? 'message error' : 'message';
+        messageEl.className = isError ? 'alert alert-danger' : 'alert alert-success';
+        messageEl.classList.remove('d-none');
     }
     console.log(isError ? '❌' : '✅', text);
 }
 
 function showLoading() {
     const loadingEl = document.getElementById('loading');
-    if (loadingEl) loadingEl.classList.remove('hidden');
+    if (loadingEl) loadingEl.classList.remove('d-none');
 }
 
 function hideLoading() {
     const loadingEl = document.getElementById('loading');
-    if (loadingEl) loadingEl.classList.add('hidden');
+    if (loadingEl) loadingEl.classList.add('d-none');
 }
 
 // API functions

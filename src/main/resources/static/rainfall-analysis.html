@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rainfall Analysis - Clime</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar Navigation -->
+            <div class="col-md-2 bg-light sidebar p-3">
+                <h5 class="text-primary">🌧️ Clime</h5>
+                <nav class="nav flex-column mt-3">
+                    <a class="nav-link" href="index.html">🏠 Main Dashboard</a>
+                    <a class="nav-link" href="seasonal-analysis.html">📊 Rainy Days Analysis</a>
+                    <a class="nav-link active" href="rainfall-analysis.html">💧 Rainfall Amount Analysis</a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-10 main-content">
+                <header class="mb-4">
+                    <h1 class="display-6">💧 Rainfall Amount Analysis</h1>
+                    <p class="lead">Analyze total rainfall amounts (mm) by year and season</p>
+                </header>
+
+                <!-- Controls Row -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">🔑 Authentication</h5>
+                                <div class="mb-3">
+                                    <label for="rainfallKey" class="form-label">Unscramble Key:</label>
+                                    <input type="text" id="rainfallKey" class="form-control" placeholder="Enter unscramble key" value="">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">📈 Analysis Controls</h5>
+                                <div class="d-grid gap-2">
+                                    <button id="showTotalRainfallButton" class="btn btn-primary">Total Rainfall by Year</button>
+                                    <div class="btn-group">
+                                        <button id="showSummerRainfallButton" class="btn btn-warning">Summer Rainfall</button>
+                                        <button id="showWinterRainfallButton" class="btn btn-info">Winter Rainfall</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading Indicator -->
+                <div id="rainfallLoading" class="text-center my-4 d-none">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading rainfall analysis...</p>
+                </div>
+
+                <!-- Status Messages -->
+                <div id="rainfallMessage" class="alert d-none" role="alert"></div>
+
+                <!-- Results -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">📊 Analysis Results</h5>
+                                <div id="rainfallResults" class="results-container">
+                                    <div class="text-center text-muted py-5">
+                                        <i class="fs-1">💧</i>
+                                        <p class="mt-3">Select an analysis type above to view rainfall data</p>
+                                        <small class="text-muted">Enter your unscramble key and click one of the analysis buttons</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Section -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title">ℹ️ About Rainfall Analysis</h5>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <h6>📈 Total Rainfall</h6>
+                                        <p class="small">Shows the sum of rainfall amounts (mm) for each year from 2005-2025.</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6>☀️ Summer Rainfall</h6>
+                                        <p class="small">Rainfall totals for March through August each year.</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6>❄️ Winter Rainfall</h6>
+                                        <p class="small">Rainfall totals for September through February each year.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="rainfall.js"></script>
+</body>
+</html>

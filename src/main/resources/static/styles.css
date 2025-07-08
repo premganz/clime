@@ -248,6 +248,28 @@ footer {
     background: linear-gradient(135deg, #0891b2, #06b6d4);
 }
 
+.btn-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    min-width: 150px;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px rgba(16, 185, 129, 0.4);
+    background: linear-gradient(135deg, #059669, #10b981);
+}
+
 /* Weather data display */
 .weather-results {
     margin-top: 1.5rem;

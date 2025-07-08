@@ -22,14 +22,12 @@ public class DataInitializer implements CommandLineRunner {
         if (csvFile.exists() && csvFile.length() > 0) {
             System.out.println("Weather data already exists. Skipping data fetch.");
             System.out.println("File size: " + csvFile.length() + " bytes");
-            System.out.println("Unscramble key: " + weatherDataService.getUnscrambleKey());
         } else {
             System.out.println("Weather data not found or empty. Fetching data from remote source...");
             System.out.println("This may take a few minutes...");
             try {
                 weatherDataService.fetchAndProcessAllData();
                 System.out.println("Data initialization complete!");
-                System.out.println("Unscramble key: " + weatherDataService.getUnscrambleKey());
             } catch (Exception e) {
                 System.err.println("Error during data fetch: " + e.getMessage());
                 e.printStackTrace();

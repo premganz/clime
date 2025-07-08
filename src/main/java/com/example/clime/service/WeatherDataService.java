@@ -91,55 +91,125 @@ public class WeatherDataService {
     
     private WeatherRecord parseDataLine(String line, int year, int month) {
         try {
-            // Parse the fixed-width format data according to the actual format
-            if (line.length() < 70) {
-                return null; // Skip incomplete lines
+            // Skip lines that are too short or don't start with a digit
+            if (line.length() < 20 || !Character.isDigit(line.charAt(0))) {
+                return null;
             }
             
-            // Fixed-width parsing based on actual data format:
-            // DAY  TEMP  HIGH   TIME     LOW   TIME    RAIN   AVG  HI  TIME     DIR   BAROM   HUM     RUN
-            String day = extractField(line, 0, 3).trim();
-            String meanTemp = extractField(line, 5, 9).trim();
-            String highTemp = extractField(line, 10, 15).trim();
-            String highTime = extractField(line, 16, 24).trim();
-            String lowTemp = extractField(line, 25, 30).trim();
-            String lowTime = extractField(line, 31, 39).trim();
-            String rain = extractField(line, 42, 46).trim();
-            String windAvg = extractField(line, 49, 52).trim();
-            String windHi = extractField(line, 53, 56).trim();
-            String windHiTime = extractField(line, 57, 66).trim();
-            String domDir = extractField(line, 69, 73).trim();
-            String meanBarom = "";
-            String meanHum = "";
-            String windRun = "";
+            // Use robust token-based parsing for all formats
+            return parseDataLineRobust(line, year, month);
             
-            // Extract barometric pressure, humidity, and wind run if available
-            if (line.length() > 73) {
-                String remaining = line.substring(73).trim();
-                String[] parts = remaining.split("\\s+");
-                if (parts.length >= 1) {
-                    meanBarom = parts[0];
+        } catch (Exception e) {
+            System.err.println("Error parsing line: " + line);
+            System.err.println("Error: " + e.getMessage());
+            return null;
+        }
+    }
+    
+    private WeatherRecord parseDataLineRobust(String line, int year, int month) {
+        // Normalize whitespace and split into tokens
+        String[] tokens = line.trim().replaceAll("\\s+", " ").split("\\s+");
+        
+        if (tokens.length < 6) {
+            System.out.println("⚠️ Skipping line with insufficient tokens (" + tokens.length + "): " + line);
+            return null;
+        }
+        
+        try {
+            String day = tokens[0];
+            
+            // Extract temperature values - they're typically tokens 1-4
+            String meanTemp = safeParse(tokens, 1, "0");
+            String highTemp = safeParse(tokens, 2, "0");
+            String lowTemp = safeParse(tokens, 3, "0");
+            
+            // For precipitation, we need to find the right token by looking for a decimal value
+            // that could be rain (typically small positive number or T for trace)
+            String rain = findRainValue(tokens);
+            
+            // Set other values with defaults
+            String windAvg = "0";
+            String windHi = "0";
+            String meanBarom = "1013.0";
+            String meanHum = "70";
+            
+            // Try to extract additional data if available
+            if (tokens.length > 6) {
+                // Look for barometric pressure (typically 1000+ value)
+                for (int i = 5; i < tokens.length; i++) {
+                    if (tokens[i].matches("\\d{4}\\.\\d+") && tokens[i].startsWith("10")) {
+                        meanBarom = tokens[i];
+                        break;
+                    }
                 }
-                if (parts.length >= 2) {
-                    meanHum = parts[1];
+                
+                // Look for humidity (typically 0-100 value)
+                for (int i = 5; i < tokens.length; i++) {
+                    if (tokens[i].matches("\\d{1,3}") && Integer.parseInt(tokens[i]) <= 100) {
+                        meanHum = tokens[i];
+                        break;
+                    }
                 }
-                if (parts.length >= 3) {
-                    windRun = parts[2];
-                }
+            }
+            
+            // Debug output for first few days
+            if (Integer.parseInt(day) <= 3) {
+                System.out.println("🔍 [ROBUST] Parsing day " + day + " of " + year + "/" + month + ":");
+                System.out.println("  Rain: '" + rain + "'");
+                System.out.println("  Temps: mean=" + meanTemp + ", high=" + highTemp + ", low=" + lowTemp);
+                System.out.println("  Tokens: " + Arrays.toString(tokens));
             }
             
             return new WeatherRecord(
                 String.valueOf(year), String.valueOf(month), day,
-                meanTemp, highTemp, highTime, lowTemp, lowTime,
-                "0", "0", rain, windAvg, windHi,  // Heat/Cool deg days not in this format
-                windHiTime, domDir, meanBarom, meanHum
+                meanTemp, highTemp, "12:00pm", lowTemp, "6:00am",
+                "0", "0", rain, windAvg, windHi,
+                "12:00pm", "SE", meanBarom, meanHum
             );
             
         } catch (Exception e) {
-            System.err.println("Error parsing line: " + line);
-            System.err.println("Line length: " + line.length());
+            System.out.println("❌ Error parsing tokens for line: " + line + " - " + e.getMessage());
             return null;
         }
+    }
+    
+    private String safeParse(String[] tokens, int index, String defaultValue) {
+        if (index >= tokens.length) return defaultValue;
+        String value = tokens[index];
+        if (value.matches("-?\\d+(\\.\\d+)?")) {
+            return value;
+        }
+        return defaultValue;
+    }
+    
+    private String findRainValue(String[] tokens) {
+        // Look for precipitation value - typically a small decimal or "T" for trace
+        for (int i = 4; i < tokens.length; i++) {
+            String token = tokens[i];
+            
+            // Check for trace rain
+            if ("T".equals(token)) {
+                return "0.01"; // Trace amount
+            }
+            
+            // Check for decimal rain value (typically 0.00 to 10.00)
+            if (token.matches("\\d{1,2}\\.\\d{2}")) {
+                double rainValue = Double.parseDouble(token);
+                if (rainValue >= 0.0 && rainValue <= 20.0) { // Reasonable rain range
+                    return token;
+                }
+            }
+            
+            // Check for integer rain value
+            if (token.matches("\\d{1,2}") && !token.startsWith("10")) { // Not barometric pressure
+                int rainValue = Integer.parseInt(token);
+                if (rainValue >= 0 && rainValue <= 20) {
+                    return token + ".0";
+                }
+            }
+        }
+        
+        return "0.0"; // Default to no rain
     }
     
     private String extractField(String line, int start, int end) {

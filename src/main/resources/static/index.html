@@ -62,6 +62,7 @@
                     <button id="fetchWeatherButton" class="btn-primary">Get Weather Data (HTML)</button>
                     <button id="fetchWeatherJsonButton" class="btn-secondary">Get Weather Data (JSON)</button>
                     <button id="getStatsButton" class="btn-info">Get Data Stats</button>
+                    <button id="showRainyDaysButton" class="btn-success">Show Rainy Days</button>
                 </div>
                 
                 <div class="quick-test-section">
@@ -408,6 +409,48 @@
                             }
                             if (messageEl) {
                                 messageEl.textContent = '✅ Weather statistics loaded';
+                                messageEl.style.color = 'green';
+                            }
+                        })
+                        .catch(function(error) {
+                            if (messageEl) {
+                                messageEl.textContent = '❌ Error: ' + error.message;
+                                messageEl.style.color = 'red';
+                            }
+                        });
+                };
+            }
+            
+            var showRainyDaysBtn = document.getElementById('showRainyDaysButton');
+            if (showRainyDaysBtn) {
+                showRainyDaysBtn.onclick = function() {
+                    var key = document.getElementById('key') ? document.getElementById('key').value : '';
+                    
+                    if (!key) {
+                        var messageEl = document.getElementById('message');
+                        if (messageEl) {
+                            messageEl.textContent = '❌ Please enter the unscramble key';
+                            messageEl.style.color = 'red';
+                        }
+                        return;
+                    }
+                    
+                    var messageEl = document.getElementById('message');
+                    if (messageEl) {
+                        messageEl.textContent = '🔄 Generating rainy days chart...';
+                        messageEl.style.color = 'blue';
+                    }
+                    
+                    var url = '/api/statistics/rainy-days/chart?key=' + encodeURIComponent(key);
+                    fetch(url)
+                        .then(function(response) { return response.text(); })
+                        .then(function(data) {
+                            var weatherDataEl = document.getElementById('weatherData');
+                            if (weatherDataEl) {
+                                weatherDataEl.innerHTML = data;
+                            }
+                            if (messageEl) {
+                                messageEl.textContent = '✅ Rainy days chart loaded';
                                 messageEl.style.color = 'green';
                             }
                         })

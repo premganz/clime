@@ -43,4 +43,32 @@ public class StatisticsController {
             return ResponseEntity.status(500).body("<h3>Error: " + e.getMessage() + "</h3>");
         }
     }
+    
+    @GetMapping("/rainy-days/summer/chart")
+    public ResponseEntity<String> getSummerRainyDaysChart(@RequestParam String key) {
+        try {
+            String chartHtml = statisticsService.generateSeasonalRainyDaysChart(key, "summer");
+            return ResponseEntity.ok()
+                .header("Content-Type", "text/html; charset=UTF-8")
+                .body(chartHtml);
+        } catch (SecurityException e) {
+            return ResponseEntity.status(401).body("<div class='error'>Invalid key</div>");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("<div class='error'>Error generating summer chart: " + e.getMessage() + "</div>");
+        }
+    }
+    
+    @GetMapping("/rainy-days/winter/chart")
+    public ResponseEntity<String> getWinterRainyDaysChart(@RequestParam String key) {
+        try {
+            String chartHtml = statisticsService.generateSeasonalRainyDaysChart(key, "winter");
+            return ResponseEntity.ok()
+                .header("Content-Type", "text/html; charset=UTF-8")
+                .body(chartHtml);
+        } catch (SecurityException e) {
+            return ResponseEntity.status(401).body("<div class='error'>Invalid key</div>");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("<div class='error'>Error generating winter chart: " + e.getMessage() + "</div>");
+        }
+    }
 }

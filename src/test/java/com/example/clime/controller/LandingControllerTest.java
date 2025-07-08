@@ -18,13 +18,15 @@ class LandingControllerTest {
     void testLandingEndpoint() throws Exception {
         mockMvc.perform(get("/api/landing"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Hello World from Spring Boot!"));
+                .andExpect(content().contentType("text/plain;charset=UTF-8"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("BACKEND WORKING!")));
     }
 
     @Test
     void testHealthEndpoint() throws Exception {
         mockMvc.perform(get("/api/health"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Application is running!"));
+                .andExpect(content().contentType("text/plain;charset=UTF-8"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Health Check OK")));
     }
 }

@@ -1,0 +1,144 @@
+/* Custom styles to enhance Bootstrap layout */
+
+/* Remove default container width limit for better desktop layout */
+.container-fluid {
+    max-width: none;
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
+
+/* Ensure equal height cards */
+.card.h-100 {
+    height: 100% !important;
+}
+
+/* Weather results styling */
+.weather-results {
+    min-height: 200px;
+}
+
+/* Loading spinner adjustments */
+.loading {
+    text-align: center;
+    padding: 20px;
+}
+
+/* Seasonal results styling */
+.seasonal-results {
+    min-height: 300px;
+}
+
+/* Custom button spacing */
+.d-grid.gap-2 > * {
+    margin-bottom: 0.5rem;
+}
+
+.d-grid.gap-1 > * {
+    margin-bottom: 0.25rem;
+}
+
+/* Chart styling enhancements */
+.statistics-chart {
+    margin: 20px 0;
+}
+
+.chart-container {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    position: relative;
+}
+
+.bar-chart {
+    display: flex;
+    align-items: end;
+    gap: 8px;
+    margin: 20px 0;
+    min-height: 250px;
+    position: relative;
+}
+
+.bar-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 50px;
+}
+
+.bar {
+    position: relative;
+    border-radius: 4px 4px 0 0;
+    min-height: 10px;
+    width: 40px;
+    transition: all 0.3s;
+}
+
+.bar:hover {
+    opacity: 0.8;
+    transform: scale(1.05);
+}
+
+.bar-value {
+    position: absolute;
+    top: -20px;
+    color: #2c3e50;
+    font-weight: bold;
+    font-size: 12px;
+    width: 100%;
+    text-align: center;
+}
+
+.bar-label {
+    margin-top: 8px;
+    text-align: center;
+    font-size: 11px;
+}
+
+.year {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.percentage {
+    color: #3498db;
+    font-weight: bold;
+}
+
+.total {
+    color: #7f8c8d;
+}
+
+.summary-stats {
+    background: #ecf0f1;
+    padding: 15px;
+    border-radius: 6px;
+    margin-top: 20px;
+}
+
+.summary-stats h4 {
+    margin-top: 0;
+    color: #2c3e50;
+}
+
+.summary-stats p {
+    margin: 5px 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .container-fluid {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .display-4 {
+        font-size: 2rem;
+    }
+    
+    .container-fluid {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+}

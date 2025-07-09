@@ -60,9 +60,9 @@ public class RainfallAnalysisService {
         html.append("<style>");
         html.append(".statistics-chart { margin: 20px 0; }");
         html.append(".chart-container { background: #f8f9fa; padding: 15px; border-radius: 8px; overflow-x: auto; }");
-        html.append(".bar-chart { display: flex; align-items: end; gap: 1px; margin: 15px 0; min-height: 280px; max-width: 100%; }");
-        html.append(".bar-item { display: flex; flex-direction: column; align-items: center; min-width: 25px; flex: 1; max-width: 30px; }");
-        html.append(".bar { position: relative; border-radius: 3px 3px 0 0; min-height: 8px; width: 100%; max-width: 22px; transition: all 0.3s; margin: 0 auto; }");
+        html.append(".bar-chart { display: flex; align-items: end; gap: 4px; margin: 15px 0; min-height: 280px; max-width: 100%; }");
+        html.append(".bar-item { display: flex; flex-direction: column; align-items: center; min-width: 35px; flex: 1; max-width: 45px; }");
+        html.append(".bar { position: relative; border-radius: 3px 3px 0 0; min-height: 8px; width: 100%; max-width: 40px; transition: all 0.3s; margin: 0 auto; }");
         html.append(".bar:hover { opacity: 0.8; transform: scale(1.1); }");
         html.append(".bar-value { position: absolute; top: -22px; color: #2c3e50; font-weight: bold; font-size: 7px; width: 100%; text-align: center; }");
         html.append(".bar-label { margin-top: 6px; text-align: center; font-size: 7px; line-height: 1.1; }");
@@ -141,9 +141,9 @@ public class RainfallAnalysisService {
         html.append("<style>");
         html.append(".statistics-chart { margin: 20px 0; }");
         html.append(".chart-container { background: #f8f9fa; padding: 15px; border-radius: 8px; overflow-x: auto; }");
-        html.append(".bar-chart { display: flex; align-items: end; gap: 1px; margin: 15px 0; min-height: 280px; max-width: 100%; }");
-        html.append(".bar-item { display: flex; flex-direction: column; align-items: center; min-width: 25px; flex: 1; max-width: 30px; }");
-        html.append(".bar { position: relative; border-radius: 3px 3px 0 0; min-height: 8px; width: 100%; max-width: 22px; transition: all 0.3s; margin: 0 auto; }");
+        html.append(".bar-chart { display: flex; align-items: end; gap: 5px; margin: 15px 0; min-height: 280px; max-width: 100%; }");
+        html.append(".bar-item { display: flex; flex-direction: column; align-items: center; min-width: 45px; flex: 1; max-width: 50px; }");
+        html.append(".bar { position: relative; border-radius: 3px 3px 0 0; min-height: 8px; width: 100%; max-width: 40px; transition: all 0.3s; margin: 0 auto; }");
         html.append(".bar:hover { opacity: 0.8; transform: scale(1.1); }");
         html.append(".bar-value { position: absolute; top: -22px; color: #2c3e50; font-weight: bold; font-size: 7px; width: 100%; text-align: center; }");
         html.append(".bar-label { margin-top: 6px; text-align: center; font-size: 7px; line-height: 1.1; }");

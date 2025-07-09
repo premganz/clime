@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clime - Landing Page</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="trendline.js" defer></script>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="row">
+            <div class="col-12">
+                <header class="text-center py-4">
+                    <h1 class="display-4">🌟 Welcome to Clime</h1>
+                    <p class="lead">Your Modern Spring Boot Weather Application</p>
+                </header>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="row g-4">
+            <!-- Left Column - API Testing -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">🔧 API Testing</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="loading" class="loading d-none">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Loading...</p>
+                        </div>
+                        <div id="message" class="alert alert-info d-none"></div>
+                        
+                        <div class="d-grid gap-2">
+                            <button id="fetchButton" class="btn btn-primary">Fetch Hello World</button>
+                            <button id="healthButton" class="btn btn-secondary">Check Health</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Center Column - Weather Data -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">🌦️ Weather Data</h5>
+                    </div>
+                    <div class="card-body">
+                        <form>
+                            <div class="mb-3">
+                                <label for="key" class="form-label">🔑 Unscramble Key:</label>
+                                <input type="text" id="key" class="form-control" placeholder="Enter unscramble key" value="">
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label for="year" class="form-label">Year:</label>
+                                        <select id="year" class="form-select">
+                                            <option value="">Select Year</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="mb-3">
+                                        <label for="month" class="form-label">Month:</label>
+                                        <select id="month" class="form-select">
+                                            <option value="">Select Month</option>
+                                            <option value="1">January</option>
+                                            <option value="2">February</option>
+                                            <option value="3">March</option>
+                                            <option value="4">April</option>
+                                            <option value="5">May</option>
+                                            <option value="6">June</option>
+                                            <option value="7">July</option>
+                                            <option value="8">August</option>
+                                            <option value="9">September</option>
+                                            <option value="10">October</option>
+                                            <option value="11">November</option>
+                                            <option value="12">December</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2 mb-3">
+                                <button type="button" id="fetchWeatherButton" class="btn btn-success">Get Weather Data (HTML)</button>
+                                <button type="button" id="fetchWeatherJsonButton" class="btn btn-info">Get Weather Data (JSON)</button>
+                                <button type="button" id="getStatsButton" class="btn btn-warning">Get Data Stats</button>
+                                <button type="button" id="showRainyDaysButton" class="btn btn-primary">Show Rainy Days Chart</button>
+                            </div>
+                        </form>
+                        
+                        <!-- Quick Test Section -->
+                        <div class="border-top pt-3">
+                            <h6>🚀 Quick Tests</h6>
+                            <div class="d-grid gap-1">
+                                <button id="testSep2005" class="btn btn-outline-secondary btn-sm">Test Sep 2005</button>
+                                <button id="testJan2010" class="btn btn-outline-secondary btn-sm">Test Jan 2010</button>
+                                <button id="testJun2025" class="btn btn-outline-secondary btn-sm">Test Jun 2025</button>
+                                <button id="testInvalidKey" class="btn btn-outline-danger btn-sm">Test Invalid Key</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column - Features & Navigation -->
+            <div class="col-lg-4 col-md-12">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">🚀 Features & Navigation</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <h6>📊 Advanced Analysis</h6>
+                            <a href="seasonal-analysis.html" class="btn btn-primary btn-lg w-100">
+                                🌦️ Seasonal Rainfall Analysis
+                            </a>
+                            <small class="text-muted d-block mt-2">
+                                Explore summer and winter rainfall patterns with interactive charts
+                            </small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h6>✨ Application Features</h6>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex align-items-center">
+                                    <span class="badge bg-success me-2">✓</span>
+                                    Spring Boot REST API
+                                </li>
+                                <li class="list-group-item d-flex align-items-center">
+                                    <span class="badge bg-success me-2">✓</span>
+                                    Weather Data Processing
+                                </li>
+                                <li class="list-group-item d-flex align-items-center">
+                                    <span class="badge bg-success me-2">✓</span>
+                                    Data Scrambling & Security
+                                </li>
+                                <li class="list-group-item d-flex align-items-center">
+                                    <span class="badge bg-success me-2">✓</span>
+                                    Interactive Charts
+                                </li>
+                                <li class="list-group-item d-flex align-items-center">
+                                    <span class="badge bg-success me-2">✓</span>
+                                    Anomaly Detection
+                                </li>
+                                <li class="list-group-item d-flex align-items-center">
+                                    <span class="badge bg-success me-2">✓</span>
+                                    Responsive Design
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Results Section - Full Width -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">📊 Results</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="weatherData" class="weather-results"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="row mt-5">
+            <div class="col-12">
+                <div class="text-center py-4 border-top">
+                    <p class="mb-0 text-muted">&copy; 2025 Clime Application. Built with Spring Boot & Bootstrap.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

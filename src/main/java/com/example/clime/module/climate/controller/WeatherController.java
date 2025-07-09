@@ -1,14 +1,15 @@
-package com.example.clime.controller;
+package com.example.clime.module.climate.controller;
 
-import com.example.clime.model.WeatherRecord;
-import com.example.clime.service.WeatherDataRetrievalService;
-import com.example.clime.service.WeatherDataService;
+import com.example.clime.module.climate.model.WeatherRecord;
+import com.example.clime.module.climate.service.WeatherDataRetrievalService;
+import com.example.clime.module.climate.service.WeatherDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/weather")
@@ -24,15 +25,15 @@ public class WeatherController {
     public ResponseEntity<Map<String, String>> fetchAllWeatherData() {
         try {
             weatherDataService.fetchAndProcessAllData();
-            return ResponseEntity.ok(Map.of(
-                "status", "success",
-                "message", "Weather data fetched and processed successfully"
-            ));
+            Map<String, String> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "Weather data fetched and processed successfully");
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of(
-                "status", "error",
-                "message", "Error fetching weather data: " + e.getMessage()
-            ));
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("status", "error");
+            errorResponse.put("message", "Error fetching weather data: " + e.getMessage());
+            return ResponseEntity.status(500).body(errorResponse);
         }
     }
     
@@ -57,25 +58,25 @@ public class WeatherController {
                     .body(html);
             } else {
                 System.out.println("📊 [BACKEND] Returning JSON data");
-                return ResponseEntity.ok(Map.of(
-                    "year", year,
-                    "month", month,
-                    "recordCount", records.size(),
-                    "data", records
-                ));
+                Map<String, Object> response = new HashMap<>();
+                response.put("year", year);
+                response.put("month", month);
+                response.put("recordCount", records.size());
+                response.put("data", records);
+                return ResponseEntity.ok(response);
             }
         } catch (SecurityException e) {
             System.out.println("❌ [BACKEND] Invalid key provided");
-            return ResponseEntity.status(403).body(Map.of(
-                "status", "error",
-                "message", "Invalid unscramble key"
-            ));
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "error");
+            errorResponse.put("message", "Invalid unscramble key");
+            return ResponseEntity.status(403).body(errorResponse);
         } catch (Exception e) {
             System.out.println("❌ [BACKEND] Error: " + e.getMessage());
-            return ResponseEntity.status(500).body(Map.of(
-                "status", "error",
-                "message", "Error retrieving weather data: " + e.getMessage()
-            ));
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "error");
+            errorResponse.put("message", "Error retrieving weather data: " + e.getMessage());
+            return ResponseEntity.status(500).body(errorResponse);
         }
     }
     
@@ -104,22 +105,22 @@ public class WeatherController {
                 }
             }
             
-            return ResponseEntity.ok(Map.of(
-                "totalRecords", totalRecords,
-                "flaggedRecords", flaggedRecords,
-                "cleanRecords", totalRecords - flaggedRecords,
-                "anomalyPercentage", totalRecords > 0 ? (double) flaggedRecords / totalRecords * 100 : 0
-            ));
+            Map<String, Object> response = new HashMap<>();
+            response.put("totalRecords", totalRecords);
+            response.put("flaggedRecords", flaggedRecords);
+            response.put("cleanRecords", totalRecords - flaggedRecords);
+            response.put("anomalyPercentage", totalRecords > 0 ? (double) flaggedRecords / totalRecords * 100 : 0);
+            return ResponseEntity.ok(response);
         } catch (SecurityException e) {
-            return ResponseEntity.status(403).body(Map.of(
-                "status", "error",
-                "message", "Invalid unscramble key"
-            ));
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "error");
+            errorResponse.put("message", "Invalid unscramble key");
+            return ResponseEntity.status(403).body(errorResponse);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of(
-                "status", "error",
-                "message", "Error calculating stats: " + e.getMessage()
-            ));
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "error");
+            errorResponse.put("message", "Error calculating stats: " + e.getMessage());
+            return ResponseEntity.status(500).body(errorResponse);
         }
     }
 }

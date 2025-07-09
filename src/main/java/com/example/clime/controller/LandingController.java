@@ -1,26 +1,42 @@
 package com.example.clime.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ResponseBody;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-@RestController
-@RequestMapping("/api")
+@Controller
 @CrossOrigin(origins = "*")
 public class LandingController {
 
-    @GetMapping("/landing")
+    @GetMapping("/")
+    public String index() {
+        return "index.html";
+    }
+
+    @GetMapping("/health")
+    public String healthPage() {
+        return "health/index.html";
+    }
+
+    @GetMapping("/climate")
+    public String climatePage() {
+        return "climate/index.html";
+    }
+
+    @GetMapping("/api/landing")
+    @ResponseBody
     public String landing() {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         System.out.println("📡 [BACKEND] Landing endpoint called at " + timestamp);
         return "🚀 BACKEND WORKING! Clime API Response at " + timestamp;
     }
 
-    @GetMapping("/health")
-    public String health() {
+    @GetMapping("/api/health")
+    @ResponseBody
+    public String healthCheck() {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         System.out.println("🏥 [BACKEND] Health endpoint called at " + timestamp);
         return "✅ Health Check OK at " + timestamp;

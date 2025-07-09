@@ -1,6 +1,6 @@
-package com.example.clime.controller;
+package com.example.clime.module.climate.controller;
 
-import com.example.clime.service.RainfallAnalysisService;
+import com.example.clime.module.climate.service.RainfallAnalysisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

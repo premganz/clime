@@ -1,6 +1,6 @@
 package com.example.clime.config;
 
-import com.example.clime.service.WeatherDataService;
+import com.example.clime.module.climate.service.WeatherDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;

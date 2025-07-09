@@ -1,4 +1,4 @@
-package com.example.clime.model;
+package com.example.clime.module.climate.model;
 
 public class WeatherRecord {
     private String year;

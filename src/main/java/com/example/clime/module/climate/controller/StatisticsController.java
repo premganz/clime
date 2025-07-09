@@ -1,11 +1,12 @@
-package com.example.clime.controller;
+package com.example.clime.module.climate.controller;
 
-import com.example.clime.service.StatisticsService;
+import com.example.clime.module.climate.service.StatisticsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/statistics")
@@ -20,15 +21,15 @@ public class StatisticsController {
             Map<String, Object> stats = statisticsService.getRainyDaysStatistics(key);
             return ResponseEntity.ok(stats);
         } catch (SecurityException e) {
-            return ResponseEntity.status(403).body(Map.of(
-                "status", "error",
-                "message", "Invalid unscramble key"
-            ));
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "error");
+            errorResponse.put("message", "Invalid unscramble key");
+            return ResponseEntity.status(403).body(errorResponse);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of(
-                "status", "error",
-                "message", "Error generating statistics: " + e.getMessage()
-            ));
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "error");
+            errorResponse.put("message", "Error generating statistics: " + e.getMessage());
+            return ResponseEntity.status(500).body(errorResponse);
         }
     }
     

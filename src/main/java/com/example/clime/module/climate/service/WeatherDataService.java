@@ -1,6 +1,6 @@
-package com.example.clime.service;
+package com.example.clime.module.climate.service;
 
-import com.example.clime.model.WeatherRecord;
+import com.example.clime.module.climate.model.WeatherRecord;
 import com.opencsv.CSVWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;

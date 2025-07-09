@@ -1,4 +1,4 @@
-package com.example.clime.service;
+package com.example.clime.module.climate.service;
 
 import com.opencsv.CSVReader;
 import org.springframework.beans.factory.annotation.Value;

@@ -16,9 +16,19 @@ public class LandingController {
         return "index.html";
     }
 
-    @GetMapping("/health")
-    public String healthPage() {
-        return "health/index.html";
+    @GetMapping("/utility")
+    public String utilityPage() {
+        return "utility/index.html";
+    }
+
+    @GetMapping("/utility2")
+    public String utility2Page() {
+        return "utility2/index.html";
+    }
+
+    @GetMapping("/utility3")
+    public String utility3Page() {
+        return "utility3/index.html";
     }
 
     @GetMapping("/climate")

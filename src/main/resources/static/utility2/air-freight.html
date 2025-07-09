@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Freight Quote - Transportation Module</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 10px;
+            background-color: #e9ecef;
+            color: #6c757d;
+            font-weight: bold;
+        }
+        .step.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+        .quote-form {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .section-header {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-left: 4px solid #0d6efd;
+            margin-bottom: 1.5rem;
+        }
+        .cargo-item {
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background-color: #f8f9fa;
+        }
+        .quote-result {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">Super App</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/">Home</a>
+                <a class="nav-link" href="/climate">Climate</a>
+                <a class="nav-link" href="/utility">Utility</a>
+                <a class="nav-link active" href="/utility2">Transportation</a>
+                <a class="nav-link" href="/utility3">Utility v2</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="text-center mb-4">✈️ Air Freight Quote Request</h1>
+                <p class="text-center text-muted mb-4">
+                    Professional air freight quotes - inspired by industry leaders
+                </p>
+            </div>
+        </div>
+
+        <div class="quote-form">
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step active">1</div>
+                <div class="step">2</div>
+                <div class="step">3</div>
+                <div class="step">4</div>
+                <div class="step">5</div>
+            </div>
+
+            <form id="airFreightForm">
+                <!-- Routing Section -->
+                <div class="section-header">
+                    <h3>🌍 Routing</h3>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>📍 Origin</h5>
+                        <div class="mb-3">
+                            <label for="originCountry" class="form-label">From Country</label>
+                            <select class="form-select" id="originCountry" required>
+                                <option value="">Select origin country</option>
+                                <option value="India">India</option>
+                                <option value="United States">United States</option>
+                                <option value="United Kingdom">United Kingdom</option>
+                                <option value="Germany">Germany</option>
+                                <option value="France">France</option>
+                                <option value="China">China</option>
+                                <option value="Japan">Japan</option>
+                                <option value="Australia">Australia</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="originPostal" class="form-label">Postal Code</label>
+                            <input type="text" class="form-control" id="originPostal" placeholder="e.g. 110001">
+                        </div>
+                        <div class="mb-3">
+                            <label for="originCity" class="form-label">City/Airport</label>
+                            <input type="text" class="form-control" id="originCity" placeholder="e.g. New Delhi / DEL">
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h5>🎯 Destination</h5>
+                        <div class="mb-3">
+                            <label for="destCountry" class="form-label">To Country</label>
+                            <select class="form-select" id="destCountry" required>
+                                <option value="">Select destination country</option>
+                                <option value="India">India</option>
+                                <option value="United States">United States</option>
+                                <option value="United Kingdom">United Kingdom</option>
+                                <option value="Germany">Germany</option>
+                                <option value="France">France</option>
+                                <option value="China">China</option>
+                                <option value="Japan">Japan</option>
+                                <option value="Australia">Australia</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="destPostal" class="form-label">Postal Code</label>
+                            <input type="text" class="form-control" id="destPostal" placeholder="e.g. 10001">
+                        </div>
+                        <div class="mb-3">
+                            <label for="destCity" class="form-label">City/Airport</label>
+                            <input type="text" class="form-control" id="destCity" placeholder="e.g. New York / JFK">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cargo Details Section -->
+                <div class="section-header mt-4">
+                    <h3>📦 Cargo Details</h3>
+                </div>
+
+                <div id="cargoItems">
+                    <div class="cargo-item">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6>Cargo Item 1</h6>
+                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeCargo(this)">Remove</button>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label class="form-label">Pieces</label>
+                                <input type="number" class="form-control cargo-pieces" min="1" value="1">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Length (cm)</label>
+                                <input type="number" class="form-control cargo-length" min="1" step="0.1">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Width (cm)</label>
+                                <input type="number" class="form-control cargo-width" min="1" step="0.1">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Height (cm)</label>
+                                <input type="number" class="form-control cargo-height" min="1" step="0.1">
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Weight (kg)</label>
+                                <input type="number" class="form-control cargo-weight" min="0.1" step="0.1">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Volume (m³)</label>
+                                <input type="number" class="form-control cargo-volume" readonly>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Commodity</label>
+                                <select class="form-select cargo-commodity">
+                                    <option value="">Select commodity</option>
+                                    <option value="Electronics">Electronics</option>
+                                    <option value="Textiles">Textiles</option>
+                                    <option value="Machinery">Machinery</option>
+                                    <option value="Automotive Parts">Automotive Parts</option>
+                                    <option value="Pharmaceuticals">Pharmaceuticals</option>
+                                    <option value="Food Products">Food Products</option>
+                                    <option value="Documents">Documents</option>
+                                    <option value="General Cargo">General Cargo</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-outline-primary mb-4" onclick="addCargo()">
+                    ➕ Add Another Cargo Item
+                </button>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">📊 Total Weight (kg)</label>
+                        <input type="text" class="form-control" id="totalWeight" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">📐 Total Volume (m³)</label>
+                        <input type="text" class="form-control" id="totalVolume" readonly>
+                    </div>
+                </div>
+
+                <!-- Incoterms Section -->
+                <div class="section-header mt-4">
+                    <h3>💼 Incoterms & Payment</h3>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">Payment Terms</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="paymentTerms" id="prepaid" value="prepaid" checked>
+                            <label class="form-check-label" for="prepaid">
+                                Prepaid (Shipper pays)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="paymentTerms" id="collect" value="collect">
+                            <label class="form-check-label" for="collect">
+                                Collect (Consignee pays)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="incoterm" class="form-label">Incoterm</label>
+                        <select class="form-select" id="incoterm">
+                            <option value="EXW">EXW - Ex Works</option>
+                            <option value="FCA">FCA - Free Carrier</option>
+                            <option value="CPT">CPT - Carriage Paid To</option>
+                            <option value="CIP" selected>CIP - Carriage and Insurance Paid</option>
+                            <option value="DAP">DAP - Delivered at Place</option>
+                            <option value="DPU">DPU - Delivered at Place Unloaded</option>
+                            <option value="DDP">DDP - Delivered Duty Paid</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Special Requirements -->
+                <div class="section-header mt-4">
+                    <h3>⚠️ Special Requirements</h3>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="dangerousGoods">
+                            <label class="form-check-label" for="dangerousGoods">
+                                Dangerous Goods (DG)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="temperatureControlled">
+                            <label class="form-check-label" for="temperatureControlled">
+                                Temperature Controlled
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="highValue">
+                            <label class="form-check-label" for="highValue">
+                                High Value Cargo
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="specialInstructions" class="form-label">Special Instructions</label>
+                        <textarea class="form-control" id="specialInstructions" rows="3" placeholder="Any special handling instructions..."></textarea>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg px-5">
+                        ✈️ Get Air Freight Quote
+                    </button>
+                </div>
+            </form>
+
+            <!-- Quote Result -->
+            <div id="quoteResult" class="quote-result" style="display: none;">
+                <h3>📋 Your Air Freight Quote</h3>
+                <div class="row">
+                    <div class="col-md-8">
+                        <p><strong>Quote ID:</strong> <span id="resultQuoteId"></span></p>
+                        <p><strong>Route:</strong> <span id="resultRoute"></span></p>
+                        <p><strong>Total Weight:</strong> <span id="resultWeight"></span></p>
+                        <p><strong>Total Volume:</strong> <span id="resultVolume"></span></p>
+                        <p><strong>Transit Time:</strong> <span id="resultTransit"></span></p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <h2><span id="resultPrice"></span></h2>
+                        <p>Estimated Rate</p>
+                        <button class="btn btn-light">Book Now</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let cargoCount = 1;
+
+        function addCargo() {
+            cargoCount++;
+            const cargoHtml = `
+                <div class="cargo-item">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6>Cargo Item ${cargoCount}</h6>
+                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeCargo(this)">Remove</button>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label class="form-label">Pieces</label>
+                            <input type="number" class="form-control cargo-pieces" min="1" value="1">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Length (cm)</label>
+                            <input type="number" class="form-control cargo-length" min="1" step="0.1">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Width (cm)</label>
+                            <input type="number" class="form-control cargo-width" min="1" step="0.1">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Height (cm)</label>
+                            <input type="number" class="form-control cargo-height" min="1" step="0.1">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Weight (kg)</label>
+                            <input type="number" class="form-control cargo-weight" min="0.1" step="0.1">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Volume (m³)</label>
+                            <input type="number" class="form-control cargo-volume" readonly>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Commodity</label>
+                            <select class="form-select cargo-commodity">
+                                <option value="">Select commodity</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Textiles">Textiles</option>
+                                <option value="Machinery">Machinery</option>
+                                <option value="Automotive Parts">Automotive Parts</option>
+                                <option value="Pharmaceuticals">Pharmaceuticals</option>
+                                <option value="Food Products">Food Products</option>
+                                <option value="Documents">Documents</option>
+                                <option value="General Cargo">General Cargo</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('cargoItems').insertAdjacentHTML('beforeend', cargoHtml);
+            updateTotals();
+        }
+
+        function removeCargo(button) {
+            if (document.querySelectorAll('.cargo-item').length > 1) {
+                button.closest('.cargo-item').remove();
+                updateTotals();
+            }
+        }
+
+        function updateTotals() {
+            let totalWeight = 0;
+            let totalVolume = 0;
+
+            document.querySelectorAll('.cargo-item').forEach(item => {
+                const pieces = parseFloat(item.querySelector('.cargo-pieces').value) || 0;
+                const length = parseFloat(item.querySelector('.cargo-length').value) || 0;
+                const width = parseFloat(item.querySelector('.cargo-width').value) || 0;
+                const height = parseFloat(item.querySelector('.cargo-height').value) || 0;
+                const weight = parseFloat(item.querySelector('.cargo-weight').value) || 0;
+
+                const volume = (length * width * height * pieces) / 1000000; // Convert cm³ to m³
+                item.querySelector('.cargo-volume').value = volume.toFixed(3);
+
+                totalWeight += weight * pieces;
+                totalVolume += volume;
+            });
+
+            document.getElementById('totalWeight').value = totalWeight.toFixed(1);
+            document.getElementById('totalVolume').value = totalVolume.toFixed(3);
+        }
+
+        // Event listeners for real-time calculation
+        document.addEventListener('input', function(e) {
+            if (e.target.matches('.cargo-pieces, .cargo-length, .cargo-width, .cargo-height, .cargo-weight')) {
+                updateTotals();
+            }
+        });
+
+        // Form submission
+        document.getElementById('airFreightForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                originCountry: document.getElementById('originCountry').value,
+                originPostal: document.getElementById('originPostal').value,
+                originCity: document.getElementById('originCity').value,
+                destinationCountry: document.getElementById('destCountry').value,
+                destinationPostal: document.getElementById('destPostal').value,
+                destinationCity: document.getElementById('destCity').value,
+                totalWeight: parseFloat(document.getElementById('totalWeight').value) || 0,
+                totalVolume: parseFloat(document.getElementById('totalVolume').value) || 0,
+                incoterm: document.getElementById('incoterm').value,
+                paymentTerms: document.querySelector('input[name="paymentTerms"]:checked').value,
+                dangerousGoods: document.getElementById('dangerousGoods').checked,
+                temperatureControlled: document.getElementById('temperatureControlled').checked,
+                highValue: document.getElementById('highValue').checked,
+                specialInstructions: document.getElementById('specialInstructions').value,
+                transportMode: 'AIR',
+                cargoItems: collectCargoItems()
+            };
+            
+            function collectCargoItems() {
+                const items = [];
+                document.querySelectorAll('.cargo-item').forEach(item => {
+                    const pieces = parseInt(item.querySelector('.cargo-pieces').value) || 1;
+                    const length = parseFloat(item.querySelector('.cargo-length').value) || 0;
+                    const width = parseFloat(item.querySelector('.cargo-width').value) || 0;
+                    const height = parseFloat(item.querySelector('.cargo-height').value) || 0;
+                    const weight = parseFloat(item.querySelector('.cargo-weight').value) || 0;
+                    const volume = parseFloat(item.querySelector('.cargo-volume').value) || 0;
+                    const commodity = item.querySelector('.cargo-commodity').value;
+                    
+                    items.push({
+                        pieces, length, width, height, weight, volume, commodity
+                    });
+                });
+                return items;
+            }
+
+            // Submit to API
+            fetch('/api/utility2/air-freight-quote', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display result
+                document.getElementById('resultQuoteId').textContent = data.quoteId;
+                document.getElementById('resultRoute').textContent = data.flightRoute || `${formData.originCity || formData.originCountry} → ${formData.destinationCity || formData.destinationCountry}`;
+                document.getElementById('resultWeight').textContent = data.chargeableWeight + ' kg (chargeable)';
+                document.getElementById('resultVolume').textContent = formData.totalVolume + ' m³';
+                document.getElementById('resultTransit').textContent = data.estimatedDays + ' days';
+                document.getElementById('resultPrice').textContent = '$' + data.estimatedCost.toFixed(2);
+                
+                // Add detailed breakdown if available
+                if (data.airlineCarrier || data.serviceType) {
+                    const detailsHtml = `
+                        <div class="mt-3">
+                            <small class="text-light">
+                                <strong>Carrier:</strong> ${data.airlineCarrier || 'TBD'}<br>
+                                <strong>Service:</strong> ${data.serviceType || 'Standard'}<br>
+                                <strong>Volumetric Weight:</strong> ${data.volumetricWeight ? data.volumetricWeight.toFixed(1) + ' kg' : 'N/A'}<br>
+                                <strong>Special Services:</strong> ${data.specialServices ? data.specialServices.join(', ') : 'None'}
+                            </small>
+                        </div>
+                    `;
+                    document.getElementById('quoteResult').insertAdjacentHTML('beforeend', detailsHtml);
+                }
+                
+                document.getElementById('quoteResult').style.display = 'block';
+                document.getElementById('quoteResult').scrollIntoView({ behavior: 'smooth' });
+            })
+            .catch(error => {
+                alert('Error getting quote: ' + error.message);
+            });
+        });
+
+        // Initialize
+        updateTotals();
+    </script>
+</body>
+</html>

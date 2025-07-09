@@ -1,0 +1,340 @@
+{
+  "data": [
+    {
+      "Brand": [
+        {
+          "BrandName": "Sample Bank Ltd",
+          "Branch": [
+            {
+              "Identification": "12345001",
+              "SequenceNumber": "00",
+              "Name": "London Central Branch",
+              "Type": "Physical",
+              "CustomerSegment": ["Personal", "Business"],
+              "ServiceAndFacility": [
+                "CounterService",
+                "DriveThru",
+                "ExternalAtm",
+                "InternalAtm",
+                "WiFi"
+              ],
+              "Accessibility": [
+                "WheelchairAccess",
+                "AudioCashMachine",
+                "AutomaticDoors",
+                "ExternalRamp",
+                "InductionLoop"
+              ],
+              "PostalAddress": {
+                "AddressLine": [
+                  "123 High Street",
+                  "Westminster"
+                ],
+                "BuildingNumber": "123",
+                "StreetName": "High Street",
+                "TownName": "London",
+                "CountrySubDivision": ["Greater London"],
+                "Country": "GB",
+                "PostCode": "SW1A 1AA",
+                "GeoLocation": {
+                  "GeographicCoordinates": {
+                    "Latitude": "51.5074",
+                    "Longitude": "-0.1278"
+                  }
+                }
+              },
+              "OpeningTimes": [
+                {
+                  "OpeningDay": "Monday",
+                  "OpeningTime": "09:00:00.000Z",
+                  "ClosingTime": "17:00:00.000Z"
+                },
+                {
+                  "OpeningDay": "Tuesday",
+                  "OpeningTime": "09:00:00.000Z",
+                  "ClosingTime": "17:00:00.000Z"
+                },
+                {
+                  "OpeningDay": "Wednesday",
+                  "OpeningTime": "09:00:00.000Z",
+                  "ClosingTime": "17:00:00.000Z"
+                },
+                {
+                  "OpeningDay": "Thursday",
+                  "OpeningTime": "09:00:00.000Z",
+                  "ClosingTime": "17:00:00.000Z"
+                },
+                {
+                  "OpeningDay": "Friday",
+                  "OpeningTime": "09:00:00.000Z",
+                  "ClosingTime": "17:00:00.000Z"
+                }
+              ],
+              "Phone": "+442071234567",
+              "Fax": "+442071234568"
+            },
+            {
+              "Identification": "12345002",
+              "SequenceNumber": "00",
+              "Name": "Manchester City Centre",
+              "Type": "Physical",
+              "CustomerSegment": ["Personal", "Business"],
+              "ServiceAndFacility": [
+                "CounterService",
+                "ExternalAtm",
+                "InternalAtm",
+                "WiFi",
+                "BusinessCounter"
+              ],
+              "Accessibility": [
+                "WheelchairAccess",
+                "AudioCashMachine",
+                "AutomaticDoors"
+              ],
+              "PostalAddress": {
+                "AddressLine": [
+                  "456 Market Street"
+                ],
+                "BuildingNumber": "456",
+                "StreetName": "Market Street",
+                "TownName": "Manchester",
+                "CountrySubDivision": ["Greater Manchester"],
+                "Country": "GB",
+                "PostCode": "M1 1AA",
+                "GeoLocation": {
+                  "GeographicCoordinates": {
+                    "Latitude": "53.4808",
+                    "Longitude": "-2.2426"
+                  }
+                }
+              },
+              "OpeningTimes": [
+                {
+                  "OpeningDay": "Monday",
+                  "OpeningTime": "09:30:00.000Z",
+                  "ClosingTime": "16:30:00.000Z"
+                },
+                {
+                  "OpeningDay": "Tuesday",
+                  "OpeningTime": "09:30:00.000Z",
+                  "ClosingTime": "16:30:00.000Z"
+                },
+                {
+                  "OpeningDay": "Wednesday",
+                  "OpeningTime": "09:30:00.000Z",
+                  "ClosingTime": "16:30:00.000Z"
+                },
+                {
+                  "OpeningDay": "Thursday",
+                  "OpeningTime": "09:30:00.000Z",
+                  "ClosingTime": "16:30:00.000Z"
+                },
+                {
+                  "OpeningDay": "Friday",
+                  "OpeningTime": "09:30:00.000Z",
+                  "ClosingTime": "16:30:00.000Z"
+                }
+              ],
+              "Phone": "+441612345678"
+            },
+            {
+              "Identification": "12345003",
+              "SequenceNumber": "00",
+              "Name": "Birmingham Bull Ring",
+              "Type": "Physical",
+              "CustomerSegment": ["Personal"],
+              "ServiceAndFacility": [
+                "CounterService",
+                "ExternalAtm",
+                "WiFi"
+              ],
+              "Accessibility": [
+                "WheelchairAccess",
+                "AudioCashMachine"
+              ],
+              "PostalAddress": {
+                "AddressLine": [
+                  "789 Bull Ring",
+                  "City Centre"
+                ],
+                "BuildingNumber": "789",
+                "StreetName": "Bull Ring",
+                "TownName": "Birmingham",
+                "CountrySubDivision": ["West Midlands"],
+                "Country": "GB",
+                "PostCode": "B5 4BP",
+                "GeoLocation": {
+                  "GeographicCoordinates": {
+                    "Latitude": "52.4796",
+                    "Longitude": "-1.8951"
+                  }
+                }
+              },
+              "OpeningTimes": [
+                {
+                  "OpeningDay": "Monday",
+                  "OpeningTime": "10:00:00.000Z",
+                  "ClosingTime": "16:00:00.000Z"
+                },
+                {
+                  "OpeningDay": "Tuesday",
+                  "OpeningTime": "10:00:00.000Z",
+                  "ClosingTime": "16:00:00.000Z"
+                },
+                {
+                  "OpeningDay": "Wednesday",
+                  "OpeningTime": "10:00:00.000Z",
+                  "ClosingTime": "16:00:00.000Z"
+                },
+                {
+                  "OpeningDay": "Thursday",
+                  "OpeningTime": "10:00:00.000Z",
+                  "ClosingTime": "16:00:00.000Z"
+                },
+                {
+                  "OpeningDay": "Friday",
+                  "OpeningTime": "10:00:00.000Z",
+                  "ClosingTime": "16:00:00.000Z"
+                },
+                {
+                  "OpeningDay": "Saturday",
+                  "OpeningTime": "10:00:00.000Z",
+                  "ClosingTime": "14:00:00.000Z"
+                }
+              ],
+              "Phone": "+441213456789"
+            },
+            {
+              "Identification": "12345004",
+              "SequenceNumber": "00",
+              "Name": "Leeds City Square",
+              "Type": "Physical",
+              "CustomerSegment": ["Personal", "Business"],
+              "ServiceAndFacility": [
+                "CounterService",
+                "DriveThru",
+                "ExternalAtm",
+                "InternalAtm",
+                "WiFi",
+                "BusinessCounter"
+              ],
+              "Accessibility": [
+                "WheelchairAccess",
+                "AudioCashMachine",
+                "AutomaticDoors",
+                "ExternalRamp"
+              ],
+              "PostalAddress": {
+                "AddressLine": [
+                  "321 City Square"
+                ],
+                "BuildingNumber": "321",
+                "StreetName": "City Square",
+                "TownName": "Leeds",
+                "CountrySubDivision": ["West Yorkshire"],
+                "Country": "GB",
+                "PostCode": "LS1 2HH",
+                "GeoLocation": {
+                  "GeographicCoordinates": {
+                    "Latitude": "53.7997",
+                    "Longitude": "-1.5492"
+                  }
+                }
+              },
+              "OpeningTimes": [
+                {
+                  "OpeningDay": "Monday",
+                  "OpeningTime": "09:00:00.000Z",
+                  "ClosingTime": "17:30:00.000Z"
+                },
+                {
+                  "OpeningDay": "Tuesday",
+                  "OpeningTime": "09:00:00.000Z",
+                  "ClosingTime": "17:30:00.000Z"
+                },
+                {
+                  "OpeningDay": "Wednesday",
+                  "OpeningTime": "09:00:00.000Z",
+                  "ClosingTime": "17:30:00.000Z"
+                },
+                {
+                  "OpeningDay": "Thursday",
+                  "OpeningTime": "09:00:00.000Z",
+                  "ClosingTime": "17:30:00.000Z"
+                },
+                {
+                  "OpeningDay": "Friday",
+                  "OpeningTime": "09:00:00.000Z",
+                  "ClosingTime": "17:30:00.000Z"
+                }
+              ],
+              "Phone": "+441132345678"
+            },
+            {
+              "Identification": "12345005",
+              "SequenceNumber": "00",
+              "Name": "Edinburgh Princes Street",
+              "Type": "Physical",
+              "CustomerSegment": ["Personal", "Business"],
+              "ServiceAndFacility": [
+                "CounterService",
+                "ExternalAtm",
+                "InternalAtm",
+                "WiFi"
+              ],
+              "Accessibility": [
+                "WheelchairAccess",
+                "AudioCashMachine"
+              ],
+              "PostalAddress": {
+                "AddressLine": [
+                  "654 Princes Street"
+                ],
+                "BuildingNumber": "654",
+                "StreetName": "Princes Street",
+                "TownName": "Edinburgh",
+                "CountrySubDivision": ["Edinburgh"],
+                "Country": "GB",
+                "PostCode": "EH2 2DG",
+                "GeoLocation": {
+                  "GeographicCoordinates": {
+                    "Latitude": "55.9533",
+                    "Longitude": "-3.1883"
+                  }
+                }
+              },
+              "OpeningTimes": [
+                {
+                  "OpeningDay": "Monday",
+                  "OpeningTime": "09:15:00.000Z",
+                  "ClosingTime": "16:45:00.000Z"
+                },
+                {
+                  "OpeningDay": "Tuesday",
+                  "OpeningTime": "09:15:00.000Z",
+                  "ClosingTime": "16:45:00.000Z"
+                },
+                {
+                  "OpeningDay": "Wednesday",
+                  "OpeningTime": "09:15:00.000Z",
+                  "ClosingTime": "16:45:00.000Z"
+                },
+                {
+                  "OpeningDay": "Thursday",
+                  "OpeningTime": "09:15:00.000Z",
+                  "ClosingTime": "16:45:00.000Z"
+                },
+                {
+                  "OpeningDay": "Friday",
+                  "OpeningTime": "09:15:00.000Z",
+                  "ClosingTime": "16:45:00.000Z"
+                }
+              ],
+              "Phone": "+441312345678"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

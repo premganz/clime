@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Branch Locator - Utility Module</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        .branch-card {
+            transition: transform 0.2s ease-in-out;
+            margin-bottom: 1rem;
+        }
+        .branch-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .search-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+        }
+        .loading-spinner {
+            display: none;
+        }
+        .facilities-badge {
+            font-size: 0.75rem;
+            margin: 0.1rem;
+        }
+        .opening-hours {
+            font-size: 0.85rem;
+        }
+        .coordinates {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="mb-3">
+            <a href="/" class="btn btn-outline-secondary">← Back to Super App</a>
+        </div>
+        
+        <h1 class="mb-4">� Branch Locator</h1>
+        <p class="lead">Find bank branches near you using the Open Banking UK specification</p>
+        
+        <!-- Search Form -->
+        <div class="search-container">
+            <h3 class="mb-3">🔍 Search for Branches</h3>
+            <form id="searchForm">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="postcode" class="form-label">Postcode</label>
+                        <input type="text" class="form-control" id="postcode" placeholder="e.g., SW1A 1AA">
+                        <div class="form-text text-light">Search by UK postcode</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="town" class="form-label">Town/City</label>
+                        <input type="text" class="form-control" id="town" placeholder="e.g., London">
+                        <div class="form-text text-light">Search by town or city name</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="latitude" class="form-label">Latitude</label>
+                        <input type="number" step="any" class="form-control" id="latitude" placeholder="e.g., 51.5074">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="longitude" class="form-label">Longitude</label>
+                        <input type="number" step="any" class="form-control" id="longitude" placeholder="e.g., -0.1278">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="radius" class="form-label">Radius (km)</label>
+                        <input type="number" class="form-control" id="radius" value="50" min="1" max="200">
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-light btn-lg me-2">
+                            <i class="bi bi-search"></i> Search Branches
+                        </button>
+                        <button type="button" id="showAllBtn" class="btn btn-outline-light">
+                            Show All Branches
+                        </button>
+                        <button type="button" id="getCurrentLocationBtn" class="btn btn-outline-light ms-2">
+                            📍 Use My Location
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="loading-spinner text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Searching for branches...</p>
+        </div>
+
+        <!-- Search Results -->
+        <div id="searchResults" class="mt-4"></div>
+
+        <!-- API Info -->
+        <div class="mt-5">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">📋 API Information</h5>
+                    <p class="card-text">This branch locator implements the Open Banking UK specification for branch data.</p>
+                    <button id="apiInfoBtn" class="btn btn-outline-primary">View API Info</button>
+                    <div id="apiInfo" class="mt-3" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentSearchParams = {};
+
+        // Form submission handler
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            searchBranches();
+        });
+
+        // Show all branches
+        document.getElementById('showAllBtn').addEventListener('click', function() {
+            clearForm();
+            searchBranches();
+        });
+
+        // Get current location
+        document.getElementById('getCurrentLocationBtn').addEventListener('click', function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    document.getElementById('latitude').value = position.coords.latitude;
+                    document.getElementById('longitude').value = position.coords.longitude;
+                    searchBranches();
+                }, function(error) {
+                    showAlert('Error getting location: ' + error.message, 'warning');
+                });
+            } else {
+                showAlert('Geolocation is not supported by this browser.', 'warning');
+            }
+        });
+
+        // API info button
+        document.getElementById('apiInfoBtn').addEventListener('click', function() {
+            loadApiInfo();
+        });
+
+        function clearForm() {
+            document.getElementById('postcode').value = '';
+            document.getElementById('town').value = '';
+            document.getElementById('latitude').value = '';
+            document.getElementById('longitude').value = '';
+            document.getElementById('radius').value = '50';
+        }
+
+        function showLoading(show) {
+            document.querySelector('.loading-spinner').style.display = show ? 'block' : 'none';
+        }
+
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.getElementById('searchResults').insertAdjacentElement('afterbegin', alertDiv);
+        }
+
+        async function searchBranches() {
+            showLoading(true);
+            
+            const postcode = document.getElementById('postcode').value.trim();
+            const town = document.getElementById('town').value.trim();
+            const latitude = document.getElementById('latitude').value.trim();
+            const longitude = document.getElementById('longitude').value.trim();
+            const radius = document.getElementById('radius').value;
+
+            // Build query parameters
+            const params = new URLSearchParams();
+            if (postcode) params.append('postcode', postcode);
+            if (town) params.append('town', town);
+            if (latitude) params.append('latitude', latitude);
+            if (longitude) params.append('longitude', longitude);
+            if (radius) params.append('radius', radius);
+
+            currentSearchParams = { postcode, town, latitude, longitude, radius };
+
+            try {
+                const response = await fetch(`/api/utility/branches/search?${params}`);
+                const data = await response.json();
+                
+                showLoading(false);
+                displayResults(data);
+            } catch (error) {
+                showLoading(false);
+                showAlert('Error searching branches: ' + error.message, 'danger');
+            }
+        }
+
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('searchResults');
+            
+            if (!data.data || data.data.length === 0) {
+                resultsDiv.innerHTML = `
+                    <div class="alert alert-info">
+                        <h5>No branches found</h5>
+                        <p>No branches match your search criteria. Try expanding your search area or using different terms.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let totalBranches = 0;
+            data.data.forEach(item => {
+                if (item.Brand && item.Brand[0] && item.Brand[0].Branch) {
+                    totalBranches += item.Brand[0].Branch.length;
+                }
+            });
+
+            let html = `
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3>Search Results</h3>
+                    <span class="badge bg-primary fs-6">${totalBranches} branch(es) found</span>
+                </div>
+            `;
+
+            // Display search parameters
+            if (data.meta && data.meta.searchParams) {
+                const params = data.meta.searchParams;
+                const activeParams = [];
+                if (params.postcode) activeParams.push(`Postcode: ${params.postcode}`);
+                if (params.town) activeParams.push(`Town: ${params.town}`);
+                if (params.latitude && params.longitude) {
+                    activeParams.push(`Location: ${params.latitude}, ${params.longitude} (${params.radius}km radius)`);
+                }
+                
+                if (activeParams.length > 0) {
+                    html += `
+                        <div class="alert alert-light">
+                            <strong>Search criteria:</strong> ${activeParams.join(' | ')}
+                        </div>
+                    `;
+                }
+            }
+
+            // Display branches
+            data.data.forEach(item => {
+                if (item.Brand && item.Brand[0]) {
+                    const brand = item.Brand[0];
+                    html += `<h4 class="mt-4">${brand.BrandName || 'Bank Branches'}</h4>`;
+                    
+                    if (brand.Branch) {
+                        brand.Branch.forEach(branch => {
+                            html += renderBranch(branch);
+                        });
+                    }
+                }
+            });
+
+            resultsDiv.innerHTML = html;
+        }
+
+        function renderBranch(branch) {
+            const address = branch.PostalAddress || {};
+            const addressLines = address.AddressLine ? address.AddressLine.join(', ') : '';
+            const fullAddress = [
+                addressLines,
+                address.TownName,
+                address.PostCode
+            ].filter(Boolean).join(', ');
+
+            // Render facilities
+            let facilitiesHtml = '';
+            if (branch.ServiceAndFacility && branch.ServiceAndFacility.length > 0) {
+                facilitiesHtml = branch.ServiceAndFacility.map(facility => 
+                    `<span class="badge bg-success facilities-badge">${facility}</span>`
+                ).join(' ');
+            }
+
+            // Render accessibility
+            let accessibilityHtml = '';
+            if (branch.Accessibility && branch.Accessibility.length > 0) {
+                accessibilityHtml = branch.Accessibility.map(access => 
+                    `<span class="badge bg-info facilities-badge">${access}</span>`
+                ).join(' ');
+            }
+
+            // Render opening times
+            let openingTimesHtml = '';
+            if (branch.OpeningTimes && branch.OpeningTimes.length > 0) {
+                openingTimesHtml = '<strong>Opening Hours:</strong><br>';
+                openingTimesHtml += branch.OpeningTimes.map(time => {
+                    const opening = time.OpeningTime ? time.OpeningTime.substring(0, 5) : 'Closed';
+                    const closing = time.ClosingTime ? time.ClosingTime.substring(0, 5) : 'Closed';
+                    return `<span class="opening-hours">${time.OpeningDay}: ${opening} - ${closing}</span>`;
+                }).join('<br>');
+            }
+
+            // Coordinates
+            let coordinatesHtml = '';
+            if (address.GeoLocation && address.GeoLocation.GeographicCoordinates) {
+                const coords = address.GeoLocation.GeographicCoordinates;
+                coordinatesHtml = `<div class="coordinates mt-2">📍 ${coords.Latitude}, ${coords.Longitude}</div>`;
+            }
+
+            return `
+                <div class="card branch-card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h5 class="card-title">${branch.Name}</h5>
+                                <p class="card-text">
+                                    <strong>📍 Address:</strong> ${fullAddress}<br>
+                                    ${branch.Phone ? `<strong>📞 Phone:</strong> ${branch.Phone}<br>` : ''}
+                                    <strong>🏪 Type:</strong> ${branch.Type || 'Physical'}<br>
+                                    <strong>👥 Customer Segments:</strong> ${(branch.CustomerSegment || []).join(', ')}
+                                </p>
+                                ${coordinatesHtml}
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    ${openingTimesHtml}
+                                </div>
+                            </div>
+                        </div>
+                        ${facilitiesHtml ? `<div class="mt-2"><strong>Services & Facilities:</strong><br>${facilitiesHtml}</div>` : ''}
+                        ${accessibilityHtml ? `<div class="mt-2"><strong>Accessibility:</strong><br>${accessibilityHtml}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadApiInfo() {
+            try {
+                const response = await fetch('/api/utility/branches/hello');
+                const data = await response.json();
+                
+                document.getElementById('apiInfo').innerHTML = `
+                    <div class="alert alert-info">
+                        <h6>${data.message}</h6>
+                        <p><strong>Service:</strong> ${data.service}</p>
+                        <p><strong>Specification:</strong> <a href="${data.specification}" target="_blank">${data.specification}</a></p>
+                    </div>
+                `;
+                document.getElementById('apiInfo').style.display = 'block';
+            } catch (error) {
+                showAlert('Error loading API info: ' + error.message, 'danger');
+            }
+        }
+
+        // Load all branches on page load
+        window.addEventListener('load', function() {
+            searchBranches();
+        });
+    </script>
+</body>
+</html>

@@ -129,13 +129,10 @@ public class AirFreightQuoteService {
         }
         
         // Define regional groupings
-        Set<String> asia = Set.of("India", "China", "Japan", "Thailand", "Singapore", "Malaysia");
-        Set<String> europe = Set.of("United Kingdom", "Germany", "France", "Netherlands", "Italy", "Spain");
-        Set<String> americas = Set.of("United States", "Canada", "Mexico", "Brazil", "Argentina");
-        Set<String> oceania = Set.of("Australia", "New Zealand");
-        
-        boolean originInRegion = false;
-        boolean destInRegion = false;
+        Set<String> asia = new HashSet<>(Arrays.asList("India", "China", "Japan", "Thailand", "Singapore", "Malaysia"));
+        Set<String> europe = new HashSet<>(Arrays.asList("United Kingdom", "Germany", "France", "Netherlands", "Italy", "Spain"));
+        Set<String> americas = new HashSet<>(Arrays.asList("United States", "Canada", "Mexico", "Brazil", "Argentina"));
+        Set<String> oceania = new HashSet<>(Arrays.asList("Australia", "New Zealand"));
         
         for (Set<String> region : Arrays.asList(asia, europe, americas, oceania)) {
             if (region.contains(origin) && region.contains(destination)) {

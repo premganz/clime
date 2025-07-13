@@ -215,6 +215,12 @@
                 }
             }
             
+            // Helper function to get current data source
+            function getCurrentDataSource() {
+                var kwsDataSourceRadio = document.getElementById('kwsDataSource');
+                return kwsDataSourceRadio && kwsDataSourceRadio.checked ? 'KWS' : 'CSV';
+            }
+            
             // Main data fetch button
             var fetchDataBtn = document.getElementById('fetchDataButton');
             if (fetchDataBtn) {
@@ -275,9 +281,10 @@
             var showAllChartsBtn = document.getElementById('showAllChartsButton');
             if (showAllChartsBtn) {
                 showAllChartsBtn.onclick = function() {
+                    var dataSource = getCurrentDataSource();
                     showMessage('🔄 Generating all charts...', 'blue');
                     
-                    fetch('/api/rainfallstatsv2/charts/all')
+                    fetch('/api/rainfallstatsv2/charts/all?dataSource=' + dataSource)
                         .then(function(response) { return response.text(); })
                         .then(function(data) {
                             var dataElement = document.getElementById('rainfallData');
@@ -296,8 +303,9 @@
             var annualChartBtn = document.getElementById('annualChartButton');
             if (annualChartBtn) {
                 annualChartBtn.onclick = function() {
+                    var dataSource = getCurrentDataSource();
                     showMessage('🔄 Generating annual rainfall chart...', 'blue');
-                    fetch('/api/rainfallv2/charts/annual')
+                    fetch('/api/rainfallv2/charts/annual?dataSource=' + dataSource)
                         .then(function(response) { return response.text(); })
                         .then(function(data) {
                             var dataElement = document.getElementById('rainfallData');
@@ -315,8 +323,9 @@
             var yearlySvgChartBtn = document.getElementById('yearlySvgChartButton');
             if (yearlySvgChartBtn) {
                 yearlySvgChartBtn.onclick = function() {
+                    var dataSource = getCurrentDataSource();
                     showMessage('🔄 Generating yearly SVG line chart...', 'blue');
-                    fetch('/api/rainfallv2/charts/yearly-svg')
+                    fetch('/api/rainfallv2/charts/yearly-svg?dataSource=' + dataSource)
                         .then(function(response) { return response.text(); })
                         .then(function(data) {
                             var dataElement = document.getElementById('rainfallData');
@@ -334,8 +343,9 @@
             var monthlyChartBtn = document.getElementById('monthlyChartButton');
             if (monthlyChartBtn) {
                 monthlyChartBtn.onclick = function() {
+                    var dataSource = getCurrentDataSource();
                     showMessage('🔄 Generating monthly averages chart...', 'blue');
-                    fetch('/api/rainfallv2/charts/monthly')
+                    fetch('/api/rainfallv2/charts/monthly?dataSource=' + dataSource)
                         .then(function(response) { return response.text(); })
                         .then(function(data) {
                             var dataElement = document.getElementById('rainfallData');
@@ -354,10 +364,11 @@
             if (monthlyTrendChartBtn) {
                 monthlyTrendChartBtn.onclick = function() {
                     var month = document.getElementById('monthSelect').value || 1;
+                    var dataSource = getCurrentDataSource();
                     var monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                     var monthName = monthNames[month - 1];
                     showMessage('🔄 Generating ' + monthName + ' trend chart...', 'blue');
-                    fetch('/api/rainfallv2/charts/monthly-trend?month=' + month)
+                    fetch('/api/rainfallv2/charts/monthly-trend?month=' + month + '&dataSource=' + dataSource)
                         .then(function(response) { return response.text(); })
                         .then(function(data) {
                             var dataElement = document.getElementById('rainfallData');
@@ -376,8 +387,9 @@
             if (decadeOffsetChartBtn) {
                 decadeOffsetChartBtn.onclick = function() {
                     var offset = document.getElementById('decadeOffsetInput').value || 0;
+                    var dataSource = getCurrentDataSource();
                     showMessage('🔄 Generating offset decade chart...', 'blue');
-                    fetch('/api/rainfallv2/charts/decade-offset?offset=' + offset)
+                    fetch('/api/rainfallv2/charts/decade-offset?offset=' + offset + '&dataSource=' + dataSource)
                         .then(function(response) { return response.text(); })
                         .then(function(data) {
                             var dataElement = document.getElementById('rainfallData');
@@ -395,8 +407,9 @@
             var decadeChartBtn = document.getElementById('decadeChartButton');
             if (decadeChartBtn) {
                 decadeChartBtn.onclick = function() {
+                    var dataSource = getCurrentDataSource();
                     showMessage('🔄 Generating decade comparison chart...', 'blue');
-                    fetch('/api/rainfallv2/charts/decade')
+                    fetch('/api/rainfallv2/charts/decade?dataSource=' + dataSource)
                         .then(function(response) { return response.text(); })
                         .then(function(data) {
                             var dataElement = document.getElementById('rainfallData');

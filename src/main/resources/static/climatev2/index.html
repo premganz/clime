@@ -123,6 +123,7 @@
                                 <button id="decadeOffsetChartButton" class="btn btn-outline-info">📆 Decade Comparison (Offset)</button>
                             </div>
                             <button id="decadeChartButton" class="btn btn-outline-info">📆 Decade Comparison (Standard)</button>
+                            <button id="chennaiRainfallButton" class="btn btn-outline-success mt-2">🌧️ Chennai Rainfall Trend</button>
                         </div>
                     </div>
                 </div>
@@ -382,6 +383,26 @@
                                 dataElement.innerHTML = data;
                             }
                             showMessage('✅ Decade chart generated!', 'green');
+                        })
+                        .catch(function(error) {
+                            showMessage('❌ Error: ' + error.message, 'red');
+                        });
+                };
+            }
+            
+            // Chennai Rainfall Trend button
+            var chennaiRainfallBtn = document.getElementById('chennaiRainfallButton');
+            if (chennaiRainfallBtn) {
+                chennaiRainfallBtn.onclick = function() {
+                    showMessage('🔄 Generating Chennai rainfall trend chart...', 'blue');
+                    fetch('/climateV2/chennai-rainfall-html')
+                        .then(function(response) { return response.text(); })
+                        .then(function(data) {
+                            var dataElement = document.getElementById('rainfallData');
+                            if (dataElement) {
+                                dataElement.innerHTML = data;
+                            }
+                            showMessage('✅ Chennai rainfall trend chart generated!', 'green');
                         })
                         .catch(function(error) {
                             showMessage('❌ Error: ' + error.message, 'red');

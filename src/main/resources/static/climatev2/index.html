@@ -58,6 +58,26 @@
                     <div class="card-body">
                         <div id="message" class="alert alert-info d-none"></div>
                         
+                        <!-- Data Source Selection -->
+                        <div class="mb-3">
+                            <label class="form-label">📊 Data Source Selection</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="dataSource" id="csvDataSource" value="csv" checked>
+                                <label class="form-check-label" for="csvDataSource">
+                                    CSV Data (1901-2021)
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="dataSource" id="kwsDataSource" value="kws">
+                                <label class="form-check-label" for="kwsDataSource">
+                                    KWS Data (2000-2025)
+                                </label>
+                            </div>
+                            <div id="currentDataSource" class="mt-2 text-muted small">
+                                Current: CSV Data - Chennai Monthly Rainfall Records (1901-2021)
+                            </div>
+                        </div>
+                        
                         <div class="mb-3">
                             <label for="year" class="form-label">Specific Year:</label>
                             <select id="year" class="form-select">
@@ -124,6 +144,7 @@
                             </div>
                             <button id="decadeChartButton" class="btn btn-outline-info">📆 Decade Comparison (Standard)</button>
                             <button id="chennaiRainfallButton" class="btn btn-outline-success mt-2">🌧️ Chennai Rainfall Trend</button>
+                            <button id="kwsRainfallAnalyticsButton" class="btn btn-outline-primary mt-2">🌐 KWS Rainfall Analytics</button>
                         </div>
                     </div>
                 </div>
@@ -437,6 +458,105 @@
                     document.getElementById('fetchDataButton').click();
                 };
             }
+            
+            // Data source toggle functionality
+            var csvDataSourceRadio = document.getElementById('csvDataSource');
+            var kwsDataSourceRadio = document.getElementById('kwsDataSource');
+            var currentDataSourceDiv = document.getElementById('currentDataSource');
+            
+            function updateDataSourceDisplay() {
+                if (kwsDataSourceRadio.checked) {
+                    currentDataSourceDiv.innerHTML = 'Current: <strong>KWS Data</strong> - KWS Chennai website data (2000-2025)';
+                    // Update year range limits for KWS data
+                    document.getElementById('startYear').min = '2000';
+                    document.getElementById('startYear').max = '2025';
+                    document.getElementById('endYear').min = '2000'; 
+                    document.getElementById('endYear').max = '2025';
+                } else {
+                    currentDataSourceDiv.innerHTML = 'Current: <strong>CSV Data</strong> - Chennai Monthly Rainfall Records (1901-2021)';
+                    // Reset year range limits for CSV data
+                    document.getElementById('startYear').min = '1901';
+                    document.getElementById('startYear').max = '2021';
+                    document.getElementById('endYear').min = '1901';
+                    document.getElementById('endYear').max = '2021';
+                }
+            }
+            
+            if (csvDataSourceRadio) {
+                csvDataSourceRadio.onchange = function() {
+                    updateDataSourceDisplay();
+                    showMessage('🔄 Switched to CSV data source', 'blue');
+                };
+            }
+            
+            if (kwsDataSourceRadio) {
+                kwsDataSourceRadio.onchange = function() {
+                    updateDataSourceDisplay();
+                    showMessage('🔄 Switched to KWS data source', 'blue');
+                };
+            }
+            
+            // Initialize data source display
+            updateDataSourceDisplay();
+            
+            // KWS Rainfall Analytics button
+            var kwsRainfallAnalyticsBtn = document.getElementById('kwsRainfallAnalyticsButton');
+            if (kwsRainfallAnalyticsBtn) {
+                kwsRainfallAnalyticsBtn.onclick = function() {
+                    showMessage('🔄 Loading KWS rainfall analytics...', 'blue');
+                    fetch('/api/kws-rainfall/status')
+                        .then(function(response) { return response.text(); })
+                        .then(function(data) {
+                            var dataElement = document.getElementById('rainfallData');
+                            if (dataElement) {
+                                dataElement.innerHTML = data;
+                            }
+                            showMessage('✅ KWS rainfall analytics loaded!', 'green');
+                        })
+                        .catch(function(error) {
+                            showMessage('❌ Error: ' + error.message, 'red');
+                        });
+                };
+            }
+            
+            // Update the main fetch data button to handle both data sources
+            fetchDataBtn.onclick = function() {
+                var year = document.getElementById('year') ? document.getElementById('year').value : '';
+                var startYear = document.getElementById('startYear') ? document.getElementById('startYear').value : '';
+                var endYear = document.getElementById('endYear') ? document.getElementById('endYear').value : '';
+                var isKwsData = kwsDataSourceRadio.checked;
+                
+                var url;
+                if (isKwsData) {
+                    url = '/api/kws-rainfall/data';
+                } else {
+                    url = '/api/rainfallv2/data?format=html';
+                }
+                
+                if (year) {
+                    url += (isKwsData ? '?' : '&') + 'year=' + year;
+                } else if (startYear && endYear) {
+                    url += (isKwsData ? '?' : '&') + 'startYear=' + startYear + '&endYear=' + endYear;
+                }
+                
+                var dataSourceText = isKwsData ? 'KWS data' : 'CSV data';
+                showMessage('🔄 Fetching ' + dataSourceText + '...', 'blue');
+                
+                fetch(url)
+                    .then(function(response) { 
+                        return response.text(); 
+                    })
+                    .then(function(data) {
+                        var dataElement = document.getElementById('rainfallData');
+                        if (dataElement) {
+                            dataElement.innerHTML = data;
+                        }
+                        showMessage('✅ ' + dataSourceText.charAt(0).toUpperCase() + dataSourceText.slice(1) + ' loaded successfully!', 'green');
+                    })
+                    .catch(function(error) {
+                        showMessage('❌ Error: ' + error.message, 'red');
+                    });
+            };
         });
     </script>
     

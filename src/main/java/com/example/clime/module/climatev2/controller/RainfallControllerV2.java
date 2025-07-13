@@ -17,9 +17,9 @@ public class RainfallControllerV2 {
     // ...existing code...
 
     @GetMapping("/charts/yearly-svg")
-    public ResponseEntity<String> getYearlySvgChart() {
+    public ResponseEntity<String> getYearlySvgChart(@RequestParam(required = false) String dataSource) {
         try {
-            String html = rainfallAnalyticsService.generateYearlyRainfallLineChartHtml();
+            String html = rainfallAnalyticsService.generateYearlyRainfallLineChartHtml(dataSource);
             return ResponseEntity.ok(html);
         } catch (Exception e) {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating yearly SVG chart: " + e.getMessage() + "</div>");
@@ -27,9 +27,10 @@ public class RainfallControllerV2 {
     }
 
     @GetMapping("/charts/decade-offset")
-    public ResponseEntity<String> getDecadeOffsetChart(@RequestParam(defaultValue = "0") int offset) {
+    public ResponseEntity<String> getDecadeOffsetChart(@RequestParam(defaultValue = "0") int offset, 
+                                                      @RequestParam(required = false) String dataSource) {
         try {
-            String html = rainfallAnalyticsService.generateDecadeComparisonChartHtmlWithOffset(offset);
+            String html = rainfallAnalyticsService.generateDecadeComparisonChartHtmlWithOffset(offset, dataSource);
             return ResponseEntity.ok(html);
         } catch (Exception e) {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating offset decade chart: " + e.getMessage() + "</div>");
@@ -121,9 +122,9 @@ public class RainfallControllerV2 {
     }
 
     @GetMapping("/charts/annual")
-    public ResponseEntity<String> getAnnualChart() {
+    public ResponseEntity<String> getAnnualChart(@RequestParam(required = false) String dataSource) {
         try {
-            String html = rainfallAnalyticsService.generateYearlyRainfallLineChartHtml();
+            String html = rainfallAnalyticsService.generateYearlyRainfallLineChartHtml(dataSource);
             return ResponseEntity.ok(html);
         } catch (Exception e) {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating annual chart: " + e.getMessage() + "</div>");
@@ -131,11 +132,11 @@ public class RainfallControllerV2 {
     }
 
     @GetMapping("/charts/monthly")
-    public ResponseEntity<String> getMonthlyChart() {
+    public ResponseEntity<String> getMonthlyChart(@RequestParam(required = false) String dataSource) {
         try {
             StringBuilder html = new StringBuilder();
             html.append("<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>");
-            html.append(rainfallAnalyticsService.generateMonthlyAverageChartHtml());
+            html.append(rainfallAnalyticsService.generateMonthlyAverageChartHtml(dataSource));
             return ResponseEntity.ok(html.toString());
         } catch (Exception e) {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating monthly chart: " + e.getMessage() + "</div>");
@@ -143,10 +144,10 @@ public class RainfallControllerV2 {
     }
 
     @GetMapping("/charts/decade")
-    public ResponseEntity<String> getDecadeChart() {
+    public ResponseEntity<String> getDecadeChart(@RequestParam(required = false) String dataSource) {
         try {
             StringBuilder html = new StringBuilder();
-            html.append(rainfallAnalyticsService.generateDecadeComparisonChartHtml());
+            html.append(rainfallAnalyticsService.generateDecadeComparisonChartHtml(dataSource));
             return ResponseEntity.ok(html.toString());
         } catch (Exception e) {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating decade chart: " + e.getMessage() + "</div>");
@@ -154,9 +155,10 @@ public class RainfallControllerV2 {
     }
 
     @GetMapping("/charts/monthly-trend")
-    public ResponseEntity<String> getMonthlyTrendChart(@RequestParam int month) {
+    public ResponseEntity<String> getMonthlyTrendChart(@RequestParam int month, 
+                                                      @RequestParam(required = false) String dataSource) {
         try {
-            String html = rainfallAnalyticsService.generateMonthlyTrendLineChartHtml(month);
+            String html = rainfallAnalyticsService.generateMonthlyTrendLineChartHtml(month, dataSource);
             return ResponseEntity.ok(html);
         } catch (Exception e) {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating monthly trend chart: " + e.getMessage() + "</div>");

@@ -1,3 +1,7 @@
+# IMPORTANT: This is SAMPLE/PLACEHOLDER data for demonstration purposes only
+# The KWS Chennai website (kwschennai.com) was not accessible during implementation
+# This data should NOT be used for actual analysis or decision-making
+# To use real data: Replace this file with actual rainfall data from KWS Chennai website
 Year,Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec,Total
 2000,24.5,18.2,35.6,42.8,48.3,58.2,95.4,112.6,138.7,245.3,168.9,85.1,1073.6
 2001,32.1,22.5,28.4,38.9,45.2,62.8,88.7,105.3,142.1,198.7,156.4,78.3,999.4
@@ -23,7 +27,5 @@ Year,Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec,Total
 2021,29.1,22.1,36.7,38.9,49.1,61.4,96.7,117.9,143.6,253.4,167.8,82.8,1099.5
 2022,27.5,20.8,31.5,42.6,50.4,57.6,89.8,109.3,139.8,274.2,173.6,88.9,1106.0
 2023,31.4,24.9,38.3,44.1,47.3,59.7,92.6,113.2,142.7,261.9,165.4,81.5,1103.0
-2024,28.7,21.3,35.6,40.5,48.9,62.4,95.8,116.7,145.2,284.3,178.9,87.2,1145.5
-2025,30.2,22.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,53.0
 2024,23.7,18.4,33.9,40.5,51.9,58.2,94.8,116.5,146.1,279.6,169.2,86.7,1119.5
 2025,28.6,21.6,35.4,39.2,48.7,60.9,91.3,111.8,140.9,255.8,171.5,84.1,1089.8

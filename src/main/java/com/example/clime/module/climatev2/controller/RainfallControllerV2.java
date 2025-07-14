@@ -162,14 +162,4 @@ public class RainfallControllerV2 {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating monthly trend chart: " + e.getMessage() + "</div>");
         }
     }
-
-    @GetMapping("/charts/yearly-monthly-offset")
-    public ResponseEntity<String> getYearlyChartWithMonthlyOffset(@RequestParam(defaultValue = "1") int offset) {
-        try {
-            String html = rainfallAnalyticsService.generateYearlyBarChartWithMonthlyOffset(offset);
-            return ResponseEntity.ok(html);
-        } catch (Exception e) {
-            return ResponseEntity.ok("<div class='alert alert-danger'>Error generating yearly chart with monthly offset: " + e.getMessage() + "</div>");
-        }
-    }
 }

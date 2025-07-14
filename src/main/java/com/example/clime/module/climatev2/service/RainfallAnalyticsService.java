@@ -1,6 +1,7 @@
 package com.example.clime.module.climatev2.service;
 
 import com.example.clime.module.climatev2.model.RainfallRecord;
+import com.example.clime.module.climatev2.service.UnifiedRainfallDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -11,21 +12,22 @@ import java.util.stream.Collectors;
 @Service("rainfallAnalyticsServiceV2")
 public class RainfallAnalyticsService {
     @Autowired
-    @Qualifier("rainfallDataServiceV2")
-    private RainfallDataService rainfallDataService;
+    @Qualifier("unifiedRainfallDataService")
+    private UnifiedRainfallDataService rainfallDataService;
 
     /**
      * Generate a yearly rainfall line graph as SVG (no JS, fits analytics dashboard).
      * @return HTML string with SVG chart
      */
     public String generateYearlyRainfallLineChartHtml() {
-        List<RainfallRecord> allData = rainfallDataService.getAllData();
-        if (allData.isEmpty()) return "<div>No data available.</div>";
+        try {
+            List<RainfallRecord> allData = rainfallDataService.getAllData();
+            if (allData.isEmpty()) return "<div>No data available.</div>";
 
-        int minYear = allData.stream().mapToInt(RainfallRecord::getYear).min().orElse(1901);
-        int maxYear = allData.stream().mapToInt(RainfallRecord::getYear).max().orElse(2021);
-        double maxRain = allData.stream().mapToDouble(RainfallRecord::getTotal).max().orElse(2000.0);
-        double minRain = allData.stream().mapToDouble(RainfallRecord::getTotal).min().orElse(0.0);
+            int minYear = allData.stream().mapToInt(RainfallRecord::getYear).min().orElse(1901);
+            int maxYear = allData.stream().mapToInt(RainfallRecord::getYear).max().orElse(2021);
+            double maxRain = allData.stream().mapToDouble(RainfallRecord::getTotal).max().orElse(2000.0);
+            double minRain = allData.stream().mapToDouble(RainfallRecord::getTotal).min().orElse(0.0);
 
         int chartWidth = 700;
         int chartHeight = 280;
@@ -94,6 +96,9 @@ public class RainfallAnalyticsService {
         html.append("</div>");
         html.append("</div>");
         return html.toString();
+        } catch (Exception e) {
+            return "<div class='alert alert-danger'>Error generating yearly rainfall chart: " + e.getMessage() + "</div>";
+        }
     }
     /**
      * Generate a decade-wise rainfall comparison chart with a user-defined offset.
@@ -102,8 +107,9 @@ public class RainfallAnalyticsService {
      * @return HTML string with SVG chart
      */
     public String generateDecadeComparisonChartHtmlWithOffset(int offset) {
-        List<RainfallRecord> allData = rainfallDataService.getAllData();
-        if (offset < 0 || offset > 9) offset = 0;
+        try {
+            List<RainfallRecord> allData = rainfallDataService.getAllData();
+            if (offset < 0 || offset > 9) offset = 0;
 
         // Find min and max year
         int minYear = allData.stream().mapToInt(RainfallRecord::getYear).min().orElse(1901);
@@ -195,6 +201,9 @@ public class RainfallAnalyticsService {
         html.append("</div>");
         html.append("</div>");
         return html.toString();
+        } catch (Exception e) {
+            return "<div class='alert alert-danger'>Error generating decade comparison chart: " + e.getMessage() + "</div>";
+        }
     }
     
     public String generateMonthlyAverageChartHtml() {
@@ -255,7 +264,8 @@ public class RainfallAnalyticsService {
     }
     
     public String generateDecadeComparisonChartHtml() {
-        List<RainfallRecord> allData = rainfallDataService.getAllData();
+        try {
+            List<RainfallRecord> allData = rainfallDataService.getAllData();
         
         // Group by decades
         Map<String, List<Double>> decadeData = new TreeMap<>();
@@ -351,6 +361,9 @@ public class RainfallAnalyticsService {
         html.append("</div>");
         
         return html.toString();
+        } catch (Exception e) {
+            return "<div class='alert alert-danger'>Error generating decade comparison chart: " + e.getMessage() + "</div>";
+        }
     }
     
     /**
@@ -358,8 +371,9 @@ public class RainfallAnalyticsService {
      * @return HTML string with trend analysis
      */
     public String generateRainfallTrendAnalysisHtml() {
-        List<RainfallRecord> allData = rainfallDataService.getAllData();
-        if (allData.isEmpty()) return "<div>No data available for trend analysis.</div>";
+        try {
+            List<RainfallRecord> allData = rainfallDataService.getAllData();
+            if (allData.isEmpty()) return "<div>No data available for trend analysis.</div>";
         
         // Calculate various trend metrics
         List<Double> yearlyTotals = allData.stream().map(RainfallRecord::getTotal).collect(Collectors.toList());
@@ -505,6 +519,9 @@ public class RainfallAnalyticsService {
         
         html.append("</div>");
         return html.toString();
+        } catch (Exception e) {
+            return "<div class='alert alert-danger'>Error generating rainfall trend analysis: " + e.getMessage() + "</div>";
+        }
     }
     
     /**
@@ -513,8 +530,9 @@ public class RainfallAnalyticsService {
      * @return HTML string with SVG chart
      */
     public String generateMonthlyTrendLineChartHtml(int month) {
-        List<RainfallRecord> allData = rainfallDataService.getAllData();
-        if (allData.isEmpty()) return "<div>No data available.</div>";
+        try {
+            List<RainfallRecord> allData = rainfallDataService.getAllData();
+            if (allData.isEmpty()) return "<div>No data available.</div>";
         
         // Validate month parameter
         if (month < 1 || month > 12) {
@@ -646,6 +664,9 @@ public class RainfallAnalyticsService {
         html.append("</div>");
         html.append("</div>");
         return html.toString();
+        } catch (Exception e) {
+            return "<div class='alert alert-danger'>Error generating monthly trend chart: " + e.getMessage() + "</div>";
+        }
     }
     
     /**
@@ -696,7 +717,8 @@ public class RainfallAnalyticsService {
     }
 
     public String generateRainfallStatisticsHtml() {
-        Map<String, Object> stats = rainfallDataService.getBasicStatistics();
+        try {
+            Map<String, Object> stats = rainfallDataService.getBasicStatistics();
         
         StringBuilder html = new StringBuilder();
         html.append("<div class='card'>");
@@ -734,5 +756,8 @@ public class RainfallAnalyticsService {
         html.append("</div>");
         
         return html.toString();
+        } catch (Exception e) {
+            return "<div class='alert alert-danger'>Error generating rainfall statistics: " + e.getMessage() + "</div>";
+        }
     }
 }

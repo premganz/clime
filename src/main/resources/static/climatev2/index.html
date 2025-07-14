@@ -70,18 +70,11 @@
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="dataSource" id="kwsDataSource" value="kws">
                                 <label class="form-check-label" for="kwsDataSource">
-                                    KWS Data (2000-2025) <span class="badge bg-warning text-dark">SAMPLE DATA</span>
+                                    KWS Data (2000-2025)
                                 </label>
                             </div>
                             <div id="currentDataSource" class="mt-2 text-muted small">
                                 Current: CSV Data - Chennai Monthly Rainfall Records (1901-2021)
-                            </div>
-                            <div id="kwsWarning" class="alert alert-warning alert-dismissible d-none mt-2" role="alert">
-                                <strong>⚠️ Important Notice:</strong> KWS data is currently sample/placeholder data for demonstration purposes only. 
-                                The website <code>kwschennai.com</code> was not accessible during implementation. 
-                                <strong>This data should not be used for actual analysis or decision-making.</strong>
-                                <br><small>To use real KWS data, please update the CSV file with actual data from the KWS Chennai website.</small>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                             </div>
                         </div>
                         
@@ -485,13 +478,8 @@
             var currentDataSourceDiv = document.getElementById('currentDataSource');
             
             function updateDataSourceDisplay() {
-                var kwsWarning = document.getElementById('kwsWarning');
                 if (kwsDataSourceRadio.checked) {
-                    currentDataSourceDiv.innerHTML = 'Current: <strong>KWS Data</strong> - KWS Chennai website data (2000-2025) <span class="badge bg-warning text-dark">SAMPLE DATA</span>';
-                    // Show warning for KWS data
-                    if (kwsWarning) {
-                        kwsWarning.classList.remove('d-none');
-                    }
+                    currentDataSourceDiv.innerHTML = 'Current: <strong>KWS Data</strong> - KWS Chennai website data (2000-2025)';
                     // Update year range limits for KWS data
                     document.getElementById('startYear').min = '2000';
                     document.getElementById('startYear').max = '2025';
@@ -499,10 +487,6 @@
                     document.getElementById('endYear').max = '2025';
                 } else {
                     currentDataSourceDiv.innerHTML = 'Current: <strong>CSV Data</strong> - Chennai Monthly Rainfall Records (1901-2021)';
-                    // Hide warning for CSV data
-                    if (kwsWarning) {
-                        kwsWarning.classList.add('d-none');
-                    }
                     // Reset year range limits for CSV data
                     document.getElementById('startYear').min = '1901';
                     document.getElementById('startYear').max = '2021';
@@ -534,13 +518,13 @@
             if (kwsDataSourceRadio) {
                 kwsDataSourceRadio.onchange = function() {
                     updateDataSourceDisplay();
-                    showMessage('🔄 Switching to KWS data source (sample data)...', 'blue');
+                    showMessage('🔄 Switching to KWS data source...', 'blue');
                     // Call server to switch data source
                     fetch('/api/datasource/switch?source=kws', { method: 'POST' })
                         .then(function(response) { return response.json(); })
                         .then(function(data) {
                             if (data.status === 'success') {
-                                showMessage('✅ Switched to KWS data source (⚠️ sample data only)', 'orange');
+                                showMessage('✅ Switched to KWS data source', 'green');
                             } else {
                                 showMessage('❌ Error switching data source: ' + data.message, 'red');
                             }

@@ -58,13 +58,40 @@ public class ChartFunctionalityTest {
 
     @Test
     public void testDecadeChart() {
-        // Test decade chart with KWS data
-        ResponseEntity<String> response = rainfallControllerV2.getDecadeChart("KWS");
+        // Test decade chart with KWS data and default bundle size
+        ResponseEntity<String> response = rainfallControllerV2.getDecadeChart(10, "KWS");
         assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody());
         
         // Should not contain the restriction message
         assertFalse(response.getBody().contains("Chart not available for KWS data"));
+    }
+
+    @Test
+    public void testBundledChartFunctionality() {
+        // Test bundled chart with different bundle sizes
+        ResponseEntity<String> response5Years = rainfallControllerV2.getDecadeChart(5, "CSV");
+        assertEquals(200, response5Years.getStatusCodeValue());
+        assertNotNull(response5Years.getBody());
+        assertTrue(response5Years.getBody().contains("5-Year Bundle"), "Should contain bundle size in title");
+        assertTrue(response5Years.getBody().contains("Bundle Size:</strong> 5 years"), "Should contain bundle size in summary");
+        
+        ResponseEntity<String> response10Years = rainfallControllerV2.getDecadeChart(10, "CSV");
+        assertEquals(200, response10Years.getStatusCodeValue());
+        assertNotNull(response10Years.getBody());
+        assertTrue(response10Years.getBody().contains("10-Year Bundle"), "Should contain bundle size in title");
+        assertTrue(response10Years.getBody().contains("Bundle Size:</strong> 10 years"), "Should contain bundle size in summary");
+    }
+
+    @Test
+    public void testBundledChartWithOffset() {
+        // Test bundled chart with offset functionality
+        ResponseEntity<String> response = rainfallControllerV2.getDecadeOffsetChart(2, 5, "CSV");
+        assertEquals(200, response.getStatusCodeValue());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().contains("(Offset: 2)"), "Should contain offset in title");
+        assertTrue(response.getBody().contains("Bundle Size:</strong> 5 years"), "Should contain bundle size in summary");
+        assertTrue(response.getBody().contains("Offset:</strong> 2 years"), "Should contain offset in summary");
     }
 
     @Test
@@ -86,5 +113,48 @@ public class ChartFunctionalityTest {
         
         unifiedRainfallDataService.setDataSource(DataSource.KWS);
         assertEquals(DataSource.KWS, unifiedRainfallDataService.getCurrentDataSource());
+    }
+
+    @Test
+    public void testBundledChartWithInvalidOffset() {
+        // Test bundled chart with invalid offset - should return error message
+        ResponseEntity<String> response = rainfallControllerV2.getDecadeOffsetChart(10, 5, "CSV");
+        assertEquals(200, response.getStatusCodeValue());
+        assertNotNull(response.getBody());
+        
+        // Should contain error message for invalid offset (offset >= bundleSize)
+        assertTrue(response.getBody().contains("Invalid Offset"), "Should contain invalid offset error message");
+        assertTrue(response.getBody().contains("alert-danger"), "Should contain error styling");
+        assertTrue(response.getBody().contains("must be strictly less than bundle size"), "Should contain specific error message");
+    }
+
+    @Test
+    public void testBundledChartWithNegativeOffset() {
+        // Test bundled chart with negative offset - should return error message
+        ResponseEntity<String> response = rainfallControllerV2.getDecadeOffsetChart(-1, 5, "CSV");
+        assertEquals(200, response.getStatusCodeValue());
+        assertNotNull(response.getBody());
+        
+        // Should contain error message for negative offset
+        assertTrue(response.getBody().contains("Invalid Offset"), "Should contain invalid offset error message");
+        assertTrue(response.getBody().contains("alert-danger"), "Should contain error styling");
+        assertTrue(response.getBody().contains("cannot be negative"), "Should contain specific error message for negative offset");
+    }
+
+    @Test
+    public void testBundledChartWithValidOffset() {
+        // Test bundled chart with valid offset - should work normally
+        ResponseEntity<String> response = rainfallControllerV2.getDecadeOffsetChart(4, 5, "CSV");
+        assertEquals(200, response.getStatusCodeValue());
+        assertNotNull(response.getBody());
+        
+        // Should NOT contain error message
+        assertFalse(response.getBody().contains("Invalid Offset"), "Should not contain invalid offset error message");
+        assertFalse(response.getBody().contains("alert-danger"), "Should not contain error styling");
+        
+        // Should contain chart content
+        assertTrue(response.getBody().contains("(Offset: 4)"), "Should contain offset in title");
+        assertTrue(response.getBody().contains("Bundle Size:</strong> 5 years"), "Should contain bundle size in summary");
+        assertTrue(response.getBody().contains("Offset:</strong> 4 years"), "Should contain offset in summary");
     }
 }

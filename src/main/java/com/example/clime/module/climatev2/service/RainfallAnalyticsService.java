@@ -1162,4 +1162,226 @@ public class RainfallAnalyticsService {
                           "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
         return months[month - 1];
     }
+
+    /**
+     * Generate a bundle-wise rainfall comparison chart with configurable bundle size.
+     * @param bundleSize size of each bundle (e.g., 10 for decades, 5 for 5-year groups)
+     * @return HTML string with SVG chart
+     */
+    public String generateBundleComparisonChartHtml(int bundleSize) {
+        try {
+            List<RainfallRecord> allData = rainfallDataService.getAllData();
+            if (bundleSize <= 0) bundleSize = 10; // Default to decade
+        
+            // Group by bundles
+            Map<String, List<Double>> bundleData = new TreeMap<>();
+            for (RainfallRecord record : allData) {
+                int bundle = (record.getYear() / bundleSize) * bundleSize;
+                String bundleLabel = bundle + "-" + (bundle + bundleSize - 1);
+                bundleData.computeIfAbsent(bundleLabel, k -> new ArrayList<>()).add(record.getTotal());
+            }
+        
+            StringBuilder html = new StringBuilder();
+        
+            // Generate SVG chart (no JavaScript required)
+            html.append("<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; margin: 20px 0;'>");
+            html.append("<h4>📊 ").append(bundleSize).append("-Year Bundle Rainfall Comparison</h4>");
+            html.append("<div style='position: relative; width: 100%; height: 400px; background: white; border: 1px solid #ddd; padding: 20px; box-sizing: border-box;'>");
+        
+            // SVG container
+            html.append("<svg width='100%' height='350' style='overflow: visible;'>");
+        
+            // Calculate chart dimensions
+            int chartWidth = 600;
+            int chartHeight = 280;
+            int barWidth = 35;
+            int spacing = 20;
+        
+            // Calculate max value for scaling
+            double maxValue = bundleData.values().stream()
+                    .mapToDouble(values -> values.stream().mapToDouble(Double::doubleValue).average().orElse(0.0))
+                    .max().orElse(2000.0);
+        
+            // Draw grid lines
+            for (int i = 0; i <= 5; i++) {
+                double y = chartHeight * (1.0 - i / 5.0);
+                double value = maxValue * i / 5.0;
+                html.append(String.format("<line x1='40' y1='%.1f' x2='%d' y2='%.1f' stroke='#e0e0e0' stroke-width='1'/>", 
+                        y, chartWidth, y));
+                html.append(String.format("<text x='35' y='%.1f' text-anchor='end' font-size='10' fill='#666' dy='3'>%.0f</text>", 
+                        y, value));
+            }
+        
+            // Draw bars
+            int x = 60;
+            for (Map.Entry<String, List<Double>> entry : bundleData.entrySet()) {
+                String bundle = entry.getKey();
+                double avgRainfall = entry.getValue().stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+                double barHeight = (avgRainfall / maxValue) * chartHeight;
+                double barY = chartHeight - barHeight;
+            
+                // Random color for each bar
+                String color = "#" + String.format("%06x", (int)(Math.random() * 0xFFFFFF));
+            
+                html.append(String.format("<rect x='%d' y='%.1f' width='%d' height='%.1f' fill='%s' stroke='#333' stroke-width='1'/>", 
+                        x, barY, barWidth, barHeight, color));
+            
+                // Value label on top
+                html.append(String.format("<text x='%d' y='%.1f' text-anchor='middle' font-size='10' fill='#333'>%.0f</text>", 
+                        x + barWidth/2, barY - 5, avgRainfall));
+            
+                // Bundle label below bar
+                html.append(String.format("<text x='%d' y='%d' text-anchor='middle' font-size='9' fill='#666'>%s</text>", 
+                        x + barWidth/2, chartHeight + 45, x + barWidth/2, chartHeight + 45, bundle));
+            
+                x += barWidth + spacing;
+            }
+        
+            html.append("</svg>");
+            html.append("</div>");
+        
+            // Statistics
+            html.append("<div style='margin-top: 20px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #3498db;'>");
+            html.append("<h6>📊 Bundle Analysis Summary</h6>");
+            html.append("<p><strong>Bundle Size:</strong> ").append(bundleSize).append(" years</p>");
+            html.append("<p><strong>Total Bundles:</strong> ").append(bundleData.size()).append("</p>");
+        
+            // Calculate highs and lows
+            double maxAvg = bundleData.values().stream()
+                    .mapToDouble(values -> values.stream().mapToDouble(Double::doubleValue).average().orElse(0.0))
+                    .max().orElse(0.0);
+            double minAvg = bundleData.values().stream()
+                    .mapToDouble(values -> values.stream().mapToDouble(Double::doubleValue).average().orElse(0.0))
+                    .min().orElse(0.0);
+            html.append(String.format("<strong>Summary:</strong> Highest bundle: %.0f mm | Lowest bundle: %.0f mm | Range: %.0f mm", 
+                    maxAvg, minAvg, maxAvg - minAvg));
+            html.append("</div>");
+        
+            html.append("</div>");
+        
+            return html.toString();
+        } catch (Exception e) {
+            return "<div class='alert alert-danger'>Error generating bundled chart: " + e.getMessage() + "</div>";
+        }
+    }
+
+    /**
+     * Generate a bundle-wise rainfall comparison chart with a user-defined offset and configurable bundle size.
+     * For example, offset=5 and bundleSize=10 means intervals are 1905-1914, 1915-1924, etc.
+     * @param offset integer between 0 and bundleSize-1
+     * @param bundleSize size of each bundle
+     * @return HTML string with SVG chart
+     */
+    public String generateBundleComparisonChartHtmlWithOffset(int offset, int bundleSize) {
+        try {
+            List<RainfallRecord> allData = rainfallDataService.getAllData();
+            if (bundleSize <= 0) bundleSize = 10; // Default to decade
+            
+            // Validate offset constraint: offset must be strictly less than bundleSize
+            if (offset < 0) {
+                return "<div class='alert alert-danger'>❌ <strong>Invalid Offset:</strong> Offset cannot be negative. Please provide an offset value ≥ 0.</div>";
+            }
+            if (offset >= bundleSize) {
+                return "<div class='alert alert-danger'>❌ <strong>Invalid Offset:</strong> Offset (" + offset + ") must be strictly less than bundle size (" + bundleSize + "). Please provide an offset value between 0 and " + (bundleSize - 1) + ".</div>";
+            }
+
+            // Find min and max year
+            int minYear = allData.stream().mapToInt(RainfallRecord::getYear).min().orElse(1901);
+            int maxYear = allData.stream().mapToInt(RainfallRecord::getYear).max().orElse(2021);
+
+            // Calculate intervals
+            List<int[]> intervals = new ArrayList<>();
+            int start = minYear - ((minYear - offset) % bundleSize);
+            if (start < minYear) start += bundleSize;
+            for (int s = start; s <= maxYear; s += bundleSize) {
+                int e = s + bundleSize - 1;
+                intervals.add(new int[]{s, Math.min(e, maxYear)});
+            }
+
+            // Group data by intervals
+            Map<String, List<Double>> intervalData = new LinkedHashMap<>();
+            for (int[] interval : intervals) {
+                int s = interval[0], e = interval[1];
+                String label = s + "-" + e;
+                List<Double> values = allData.stream()
+                        .filter(r -> r.getYear() >= s && r.getYear() <= e)
+                        .map(RainfallRecord::getTotal)
+                        .collect(Collectors.toList());
+                if (!values.isEmpty()) intervalData.put(label, values);
+            }
+
+            StringBuilder html = new StringBuilder();
+            html.append("<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; margin: 20px 0;'>");
+            html.append("<h4>📊 ").append(bundleSize).append("-Year Bundle Rainfall Comparison (Offset: ").append(offset).append(")</h4>");
+            html.append("<div style='position: relative; width: 100%; height: 400px; background: white; border: 1px solid #ddd; padding: 20px; box-sizing: border-box;'>");
+            html.append("<svg width='100%' height='350' style='overflow: visible;'>");
+
+            int chartWidth = 600;
+            int chartHeight = 280;
+            int barWidth = 35;
+            int spacing = 20;
+
+            double maxValue = intervalData.values().stream()
+                    .mapToDouble(values -> values.stream().mapToDouble(Double::doubleValue).average().orElse(0.0))
+                    .max().orElse(2000.0);
+
+            // Draw grid lines
+            for (int i = 0; i <= 5; i++) {
+                double y = chartHeight * (1.0 - i / 5.0);
+                double value = maxValue * i / 5.0;
+                html.append(String.format("<line x1='40' y1='%.1f' x2='%d' y2='%.1f' stroke='#e0e0e0' stroke-width='1'/>", 
+                        y, chartWidth, y));
+                html.append(String.format("<text x='35' y='%.1f' text-anchor='end' font-size='10' fill='#666' dy='3'>%.0f</text>", 
+                        y, value));
+            }
+
+            // Draw bars
+            int x = 60;
+            for (Map.Entry<String, List<Double>> entry : intervalData.entrySet()) {
+                String interval = entry.getKey();
+                double avgRainfall = entry.getValue().stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+                double barHeight = (avgRainfall / maxValue) * chartHeight;
+                double barY = chartHeight - barHeight;
+
+                String color = "#" + String.format("%06x", (int)(Math.random() * 0xFFFFFF));
+
+                html.append(String.format("<rect x='%d' y='%.1f' width='%d' height='%.1f' fill='%s' stroke='#333' stroke-width='1'/>", 
+                        x, barY, barWidth, barHeight, color));
+
+                html.append(String.format("<text x='%d' y='%.1f' text-anchor='middle' font-size='10' fill='#333'>%.0f</text>", 
+                        x + barWidth/2, barY - 5, avgRainfall));
+
+                html.append(String.format("<text x='%d' y='%d' text-anchor='middle' font-size='9' fill='#666'>%s</text>", 
+                        x + barWidth/2, chartHeight + 45, interval));
+
+                x += barWidth + spacing;
+            }
+
+            html.append("</svg>");
+            html.append("</div>");
+
+            // Statistics
+            html.append("<div style='margin-top: 20px; padding: 15px; background: white; border-radius: 6px; border-left: 4px solid #3498db;'>");
+            html.append("<h6>📊 Bundle Analysis Summary</h6>");
+            html.append("<p><strong>Bundle Size:</strong> ").append(bundleSize).append(" years</p>");
+            html.append("<p><strong>Offset:</strong> ").append(offset).append(" years</p>");
+            html.append("<p><strong>Total Bundles:</strong> ").append(intervalData.size()).append("</p>");
+
+            double maxAvg = intervalData.values().stream()
+                    .mapToDouble(values -> values.stream().mapToDouble(Double::doubleValue).average().orElse(0.0))
+                    .max().orElse(0.0);
+            double minAvg = intervalData.values().stream()
+                    .mapToDouble(values -> values.stream().mapToDouble(Double::doubleValue).average().orElse(0.0))
+                    .min().orElse(0.0);
+            html.append(String.format("<strong>Summary:</strong> Highest bundle: %.0f mm | Lowest bundle: %.0f mm | Range: %.0f mm", 
+                    maxAvg, minAvg, maxAvg - minAvg));
+            html.append("</div>");
+
+            html.append("</div>");
+
+            return html.toString();
+        } catch (Exception e) {
+            return "<div class='alert alert-danger'>Error generating bundled chart with offset: " + e.getMessage() + "</div>";
+        }
+    }
 }

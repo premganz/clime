@@ -139,24 +139,24 @@ public class RainfallControllerV2 {
     }
 
     @GetMapping("/charts/decade")
-    public ResponseEntity<String> getDecadeChart(@RequestParam(defaultValue = "CSV") String dataSource) {
+    public ResponseEntity<String> getDecadeChart(@RequestParam(defaultValue = "10") int bundleSize, @RequestParam(defaultValue = "CSV") String dataSource) {
         try {
             return getChartResponse(dataSource, () -> {
                 StringBuilder html = new StringBuilder();
-                html.append(rainfallAnalyticsService.generateDecadeComparisonChartHtml());
+                html.append(rainfallAnalyticsService.generateBundleComparisonChartHtml(bundleSize));
                 return html.toString();
-            }, "decade chart");
+            }, "bundled chart");
         } catch (Exception e) {
-            return ResponseEntity.ok("<div class='alert alert-danger'>Error generating decade chart: " + e.getMessage() + "</div>");
+            return ResponseEntity.ok("<div class='alert alert-danger'>Error generating bundled chart: " + e.getMessage() + "</div>");
         }
     }
 
     @GetMapping("/charts/decade-offset")
-    public ResponseEntity<String> getDecadeOffsetChart(@RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "CSV") String dataSource) {
+    public ResponseEntity<String> getDecadeOffsetChart(@RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "10") int bundleSize, @RequestParam(defaultValue = "CSV") String dataSource) {
         try {
-            return getChartResponse(dataSource, () -> rainfallAnalyticsService.generateDecadeComparisonChartHtmlWithOffset(offset), "offset decade chart");
+            return getChartResponse(dataSource, () -> rainfallAnalyticsService.generateBundleComparisonChartHtmlWithOffset(offset, bundleSize), "bundled chart with offset");
         } catch (Exception e) {
-            return ResponseEntity.ok("<div class='alert alert-danger'>Error generating offset decade chart: " + e.getMessage() + "</div>");
+            return ResponseEntity.ok("<div class='alert alert-danger'>Error generating bundled chart with offset: " + e.getMessage() + "</div>");
         }
     }
 

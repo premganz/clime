@@ -25,7 +25,7 @@ public class RainfallStatsControllerV2 {
     }
 
     @GetMapping("/charts/all")
-    public ResponseEntity<String> getAllCharts() {
+    public ResponseEntity<String> getAllCharts(@RequestParam(defaultValue = "10") int bundleSize) {
         try {
             StringBuilder html = new StringBuilder();
             html.append("<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>");
@@ -38,8 +38,8 @@ public class RainfallStatsControllerV2 {
             // html.append(rainfallAnalyticsService.generateAnnualRainfallChartHtml());
             html.append(rainfallAnalyticsService.generateYearlyRainfallLineChartHtml());
             html.append(rainfallAnalyticsService.generateMonthlyAverageChartHtml());
-            html.append(rainfallAnalyticsService.generateDecadeComparisonChartHtml());
-            html.append(rainfallAnalyticsService.generateDecadeComparisonChartHtmlWithOffset(0));
+            html.append(rainfallAnalyticsService.generateDecadeComparisonChartHtml(bundleSize));
+            html.append(rainfallAnalyticsService.generateDecadeComparisonChartHtmlWithOffset(0, bundleSize));
             
             html.append("</div>");
             return ResponseEntity.ok(html.toString());

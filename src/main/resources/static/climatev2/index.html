@@ -139,7 +139,7 @@
                             </div>
                             <div class="input-group mb-2">
                                 <span class="input-group-text">Bundle Size</span>
-                                <input type="number" id="bundleSizeInput" class="form-control" min="1" max="50" value="10" style="max-width:70px;">
+                                <input type="number" id="bundleSizeInput" class="form-control" min="1" max="50" value="10" style="max-width:70px;" onchange="updateOffsetMax()">
                                 <button id="decadeChartButton" class="btn btn-outline-info">📆 Bundled Chart</button>
                             </div>
                             <div class="input-group mb-2">
@@ -215,6 +215,24 @@
     <script>
         // Initialize the page
         document.addEventListener('DOMContentLoaded', function() {
+            // Helper function to update offset max value based on bundle size
+            window.updateOffsetMax = function() {
+                var bundleSize = parseInt(document.getElementById('bundleSizeInput').value) || 10;
+                var offsetInput = document.getElementById('decadeOffsetInput');
+                if (offsetInput) {
+                    var maxOffset = bundleSize - 1;
+                    offsetInput.max = maxOffset;
+                    
+                    // If current offset value is >= bundleSize, reset it to max allowed
+                    var currentOffset = parseInt(offsetInput.value) || 0;
+                    if (currentOffset >= bundleSize) {
+                        offsetInput.value = maxOffset;
+                    }
+                }
+            };
+            
+            // Initialize offset max value
+            updateOffsetMax();
             // Populate year dropdown
             var yearSelect = document.getElementById('year');
             if (yearSelect) {
@@ -409,9 +427,20 @@
             var decadeOffsetChartBtn = document.getElementById('decadeOffsetChartButton');
             if (decadeOffsetChartBtn) {
                 decadeOffsetChartBtn.onclick = function() {
-                    var offset = document.getElementById('decadeOffsetInput').value || 0;
-                    var bundleSize = document.getElementById('bundleSizeInput').value || 10;
+                    var offset = parseInt(document.getElementById('decadeOffsetInput').value) || 0;
+                    var bundleSize = parseInt(document.getElementById('bundleSizeInput').value) || 10;
                     var dataSource = getCurrentDataSource();
+                    
+                    // Validate offset constraint: offset must be strictly less than bundleSize
+                    if (offset < 0) {
+                        showMessage('❌ Invalid Offset: Offset cannot be negative. Please provide an offset value ≥ 0.', 'red');
+                        return;
+                    }
+                    if (offset >= bundleSize) {
+                        showMessage('❌ Invalid Offset: Offset (' + offset + ') must be strictly less than bundle size (' + bundleSize + '). Please provide an offset value between 0 and ' + (bundleSize - 1) + '.', 'red');
+                        return;
+                    }
+                    
                     showMessage('🔄 Generating bundled chart with offset...', 'blue');
                     fetch('/api/rainfallv2/charts/decade-offset?offset=' + offset + '&bundleSize=' + bundleSize + '&dataSource=' + dataSource)
                         .then(function(response) { return response.text(); })

@@ -1276,7 +1276,14 @@ public class RainfallAnalyticsService {
         try {
             List<RainfallRecord> allData = rainfallDataService.getAllData();
             if (bundleSize <= 0) bundleSize = 10; // Default to decade
-            if (offset < 0 || offset >= bundleSize) offset = 0;
+            
+            // Validate offset constraint: offset must be strictly less than bundleSize
+            if (offset < 0) {
+                return "<div class='alert alert-danger'>❌ <strong>Invalid Offset:</strong> Offset cannot be negative. Please provide an offset value ≥ 0.</div>";
+            }
+            if (offset >= bundleSize) {
+                return "<div class='alert alert-danger'>❌ <strong>Invalid Offset:</strong> Offset (" + offset + ") must be strictly less than bundle size (" + bundleSize + "). Please provide an offset value between 0 and " + (bundleSize - 1) + ".</div>";
+            }
 
             // Find min and max year
             int minYear = allData.stream().mapToInt(RainfallRecord::getYear).min().orElse(1901);

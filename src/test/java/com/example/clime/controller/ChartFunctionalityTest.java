@@ -114,4 +114,47 @@ public class ChartFunctionalityTest {
         unifiedRainfallDataService.setDataSource(DataSource.KWS);
         assertEquals(DataSource.KWS, unifiedRainfallDataService.getCurrentDataSource());
     }
+
+    @Test
+    public void testBundledChartWithInvalidOffset() {
+        // Test bundled chart with invalid offset - should return error message
+        ResponseEntity<String> response = rainfallControllerV2.getDecadeOffsetChart(10, 5, "CSV");
+        assertEquals(200, response.getStatusCodeValue());
+        assertNotNull(response.getBody());
+        
+        // Should contain error message for invalid offset (offset >= bundleSize)
+        assertTrue(response.getBody().contains("Invalid Offset"), "Should contain invalid offset error message");
+        assertTrue(response.getBody().contains("alert-danger"), "Should contain error styling");
+        assertTrue(response.getBody().contains("must be strictly less than bundle size"), "Should contain specific error message");
+    }
+
+    @Test
+    public void testBundledChartWithNegativeOffset() {
+        // Test bundled chart with negative offset - should return error message
+        ResponseEntity<String> response = rainfallControllerV2.getDecadeOffsetChart(-1, 5, "CSV");
+        assertEquals(200, response.getStatusCodeValue());
+        assertNotNull(response.getBody());
+        
+        // Should contain error message for negative offset
+        assertTrue(response.getBody().contains("Invalid Offset"), "Should contain invalid offset error message");
+        assertTrue(response.getBody().contains("alert-danger"), "Should contain error styling");
+        assertTrue(response.getBody().contains("cannot be negative"), "Should contain specific error message for negative offset");
+    }
+
+    @Test
+    public void testBundledChartWithValidOffset() {
+        // Test bundled chart with valid offset - should work normally
+        ResponseEntity<String> response = rainfallControllerV2.getDecadeOffsetChart(4, 5, "CSV");
+        assertEquals(200, response.getStatusCodeValue());
+        assertNotNull(response.getBody());
+        
+        // Should NOT contain error message
+        assertFalse(response.getBody().contains("Invalid Offset"), "Should not contain invalid offset error message");
+        assertFalse(response.getBody().contains("alert-danger"), "Should not contain error styling");
+        
+        // Should contain chart content
+        assertTrue(response.getBody().contains("(Offset: 4)"), "Should contain offset in title");
+        assertTrue(response.getBody().contains("Bundle Size:</strong> 5 years"), "Should contain bundle size in summary");
+        assertTrue(response.getBody().contains("Offset:</strong> 4 years"), "Should contain offset in summary");
+    }
 }

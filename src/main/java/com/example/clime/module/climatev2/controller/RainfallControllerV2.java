@@ -1,8 +1,10 @@
 package com.example.clime.module.climatev2.controller;
 
+import com.example.clime.module.climatev2.model.DataSource;
 import com.example.clime.module.climatev2.model.RainfallRecord;
 import com.example.clime.module.climatev2.service.RainfallDataService;
 import com.example.clime.module.climatev2.service.RainfallAnalyticsService;
+import com.example.clime.module.climatev2.service.UnifiedRainfallDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
@@ -10,32 +12,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 @RestController
 @RequestMapping("/api/rainfallv2")
 public class RainfallControllerV2 {
-    // ...existing code...
-
-    @GetMapping("/charts/yearly-svg")
-    public ResponseEntity<String> getYearlySvgChart() {
-        try {
-            String html = rainfallAnalyticsService.generateYearlyRainfallLineChartHtml();
-            return ResponseEntity.ok(html);
-        } catch (Exception e) {
-            return ResponseEntity.ok("<div class='alert alert-danger'>Error generating yearly SVG chart: " + e.getMessage() + "</div>");
-        }
-    }
-
-    @GetMapping("/charts/decade-offset")
-    public ResponseEntity<String> getDecadeOffsetChart(@RequestParam(defaultValue = "0") int offset) {
-        try {
-            String html = rainfallAnalyticsService.generateDecadeComparisonChartHtmlWithOffset(offset);
-            return ResponseEntity.ok(html);
-        } catch (Exception e) {
-            return ResponseEntity.ok("<div class='alert alert-danger'>Error generating offset decade chart: " + e.getMessage() + "</div>");
-        }
-    }
-
+    
     @Autowired
     @Qualifier("rainfallDataServiceV2")
     private RainfallDataService rainfallDataService;
@@ -43,6 +25,9 @@ public class RainfallControllerV2 {
     @Autowired
     @Qualifier("rainfallAnalyticsServiceV2")
     private RainfallAnalyticsService rainfallAnalyticsService;
+    
+    @Autowired
+    private UnifiedRainfallDataService unifiedRainfallDataService;
 
     @GetMapping("/data")
     public ResponseEntity<String> getRainfallData(
@@ -121,45 +106,85 @@ public class RainfallControllerV2 {
     }
 
     @GetMapping("/charts/annual")
-    public ResponseEntity<String> getAnnualChart() {
+    public ResponseEntity<String> getAnnualChart(@RequestParam(defaultValue = "CSV") String dataSource) {
         try {
-            String html = rainfallAnalyticsService.generateYearlyRainfallLineChartHtml();
-            return ResponseEntity.ok(html);
+            // Set data source temporarily
+            return getChartResponse(dataSource, () -> rainfallAnalyticsService.generateYearlyRainfallLineChartHtml(), "annual chart");
         } catch (Exception e) {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating annual chart: " + e.getMessage() + "</div>");
         }
     }
 
-    @GetMapping("/charts/monthly")
-    public ResponseEntity<String> getMonthlyChart() {
+    @GetMapping("/charts/yearly-svg")
+    public ResponseEntity<String> getYearlySvgChart(@RequestParam(defaultValue = "CSV") String dataSource) {
         try {
-            StringBuilder html = new StringBuilder();
-            html.append("<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>");
-            html.append(rainfallAnalyticsService.generateMonthlyAverageChartHtml());
-            return ResponseEntity.ok(html.toString());
+            return getChartResponse(dataSource, () -> rainfallAnalyticsService.generateYearlyRainfallLineChartHtml(), "yearly SVG chart");
+        } catch (Exception e) {
+            return ResponseEntity.ok("<div class='alert alert-danger'>Error generating yearly SVG chart: " + e.getMessage() + "</div>");
+        }
+    }
+
+    @GetMapping("/charts/monthly")
+    public ResponseEntity<String> getMonthlyChart(@RequestParam(defaultValue = "CSV") String dataSource) {
+        try {
+            return getChartResponse(dataSource, () -> {
+                StringBuilder html = new StringBuilder();
+                html.append("<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>");
+                html.append(rainfallAnalyticsService.generateMonthlyAverageChartHtml());
+                return html.toString();
+            }, "monthly chart");
         } catch (Exception e) {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating monthly chart: " + e.getMessage() + "</div>");
         }
     }
 
     @GetMapping("/charts/decade")
-    public ResponseEntity<String> getDecadeChart() {
+    public ResponseEntity<String> getDecadeChart(@RequestParam(defaultValue = "CSV") String dataSource) {
         try {
-            StringBuilder html = new StringBuilder();
-            html.append(rainfallAnalyticsService.generateDecadeComparisonChartHtml());
-            return ResponseEntity.ok(html.toString());
+            return getChartResponse(dataSource, () -> {
+                StringBuilder html = new StringBuilder();
+                html.append(rainfallAnalyticsService.generateDecadeComparisonChartHtml());
+                return html.toString();
+            }, "decade chart");
         } catch (Exception e) {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating decade chart: " + e.getMessage() + "</div>");
         }
     }
 
-    @GetMapping("/charts/monthly-trend")
-    public ResponseEntity<String> getMonthlyTrendChart(@RequestParam int month) {
+    @GetMapping("/charts/decade-offset")
+    public ResponseEntity<String> getDecadeOffsetChart(@RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "CSV") String dataSource) {
         try {
-            String html = rainfallAnalyticsService.generateMonthlyTrendLineChartHtml(month);
-            return ResponseEntity.ok(html);
+            return getChartResponse(dataSource, () -> rainfallAnalyticsService.generateDecadeComparisonChartHtmlWithOffset(offset), "offset decade chart");
+        } catch (Exception e) {
+            return ResponseEntity.ok("<div class='alert alert-danger'>Error generating offset decade chart: " + e.getMessage() + "</div>");
+        }
+    }
+
+    @GetMapping("/charts/monthly-trend")
+    public ResponseEntity<String> getMonthlyTrendChart(@RequestParam int month, @RequestParam(defaultValue = "CSV") String dataSource) {
+        try {
+            return getChartResponse(dataSource, () -> rainfallAnalyticsService.generateMonthlyTrendLineChartHtml(month), "monthly trend chart");
         } catch (Exception e) {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating monthly trend chart: " + e.getMessage() + "</div>");
+        }
+    }
+    
+    private ResponseEntity<String> getChartResponse(String dataSource, Supplier<String> chartGenerator, String chartType) {
+        if ("KWS".equalsIgnoreCase(dataSource)) {
+            // KWS data doesn't support advanced charts yet
+            return ResponseEntity.ok("<div class='alert alert-warning'>" +
+                    "<strong>Chart not available for KWS data</strong><br>" +
+                    "Advanced " + chartType + " functionality is currently optimized for CSV data. " +
+                    "Please switch to CSV data source for full analytics capabilities." +
+                    "</div>");
+        } else {
+            // CSV data - use analytics service
+            try {
+                String html = chartGenerator.get();
+                return ResponseEntity.ok(html);
+            } catch (Exception e) {
+                return ResponseEntity.ok("<div class='alert alert-danger'>Error generating " + chartType + ": " + e.getMessage() + "</div>");
+            }
         }
     }
 }

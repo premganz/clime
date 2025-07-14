@@ -498,14 +498,40 @@
             if (csvDataSourceRadio) {
                 csvDataSourceRadio.onchange = function() {
                     updateDataSourceDisplay();
-                    showMessage('🔄 Switched to CSV data source', 'blue');
+                    showMessage('🔄 Switching to CSV data source...', 'blue');
+                    // Call server to switch data source
+                    fetch('/api/datasource/switch?source=csv', { method: 'POST' })
+                        .then(function(response) { return response.json(); })
+                        .then(function(data) {
+                            if (data.status === 'success') {
+                                showMessage('✅ Switched to CSV data source', 'green');
+                            } else {
+                                showMessage('❌ Error switching data source: ' + data.message, 'red');
+                            }
+                        })
+                        .catch(function(error) {
+                            showMessage('❌ Error switching data source: ' + error.message, 'red');
+                        });
                 };
             }
             
             if (kwsDataSourceRadio) {
                 kwsDataSourceRadio.onchange = function() {
                     updateDataSourceDisplay();
-                    showMessage('🔄 Switched to KWS data source', 'blue');
+                    showMessage('🔄 Switching to KWS data source...', 'blue');
+                    // Call server to switch data source
+                    fetch('/api/datasource/switch?source=kws', { method: 'POST' })
+                        .then(function(response) { return response.json(); })
+                        .then(function(data) {
+                            if (data.status === 'success') {
+                                showMessage('✅ Switched to KWS data source', 'green');
+                            } else {
+                                showMessage('❌ Error switching data source: ' + data.message, 'red');
+                            }
+                        })
+                        .catch(function(error) {
+                            showMessage('❌ Error switching data source: ' + error.message, 'red');
+                        });
                 };
             }
             
@@ -537,23 +563,17 @@
                 var year = document.getElementById('year') ? document.getElementById('year').value : '';
                 var startYear = document.getElementById('startYear') ? document.getElementById('startYear').value : '';
                 var endYear = document.getElementById('endYear') ? document.getElementById('endYear').value : '';
-                var isKwsData = kwsDataSourceRadio.checked;
                 
-                var url;
-                if (isKwsData) {
-                    url = '/api/kws-rainfall/data';
-                } else {
-                    url = '/api/rainfallv2/data?format=html';
-                }
+                // Use the unified endpoint which respects the current data source
+                var url = '/api/datasource/data?format=html';
                 
                 if (year) {
-                    url += (isKwsData ? '?' : '&') + 'year=' + year;
+                    url += '&year=' + year;
                 } else if (startYear && endYear) {
-                    url += (isKwsData ? '?' : '&') + 'startYear=' + startYear + '&endYear=' + endYear;
+                    url += '&startYear=' + startYear + '&endYear=' + endYear;
                 }
                 
-                var dataSourceText = isKwsData ? 'KWS data' : 'CSV data';
-                showMessage('🔄 Fetching ' + dataSourceText + '...', 'blue');
+                showMessage('🔄 Fetching rainfall data...', 'blue');
                 
                 fetch(url)
                     .then(function(response) { 
@@ -564,7 +584,7 @@
                         if (dataElement) {
                             dataElement.innerHTML = data;
                         }
-                        showMessage('✅ ' + dataSourceText.charAt(0).toUpperCase() + dataSourceText.slice(1) + ' loaded successfully!', 'green');
+                        showMessage('✅ Rainfall data loaded successfully!', 'green');
                     })
                     .catch(function(error) {
                         showMessage('❌ Error: ' + error.message, 'red');

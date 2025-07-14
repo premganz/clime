@@ -27,9 +27,11 @@ public class RainfallControllerV2 {
     }
 
     @GetMapping("/charts/decade-offset")
-    public ResponseEntity<String> getDecadeOffsetChart(@RequestParam(defaultValue = "0") int offset) {
+    public ResponseEntity<String> getDecadeOffsetChart(
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "10") int bundleSize) {
         try {
-            String html = rainfallAnalyticsService.generateDecadeComparisonChartHtmlWithOffset(offset);
+            String html = rainfallAnalyticsService.generateDecadeComparisonChartHtmlWithOffset(offset, bundleSize);
             return ResponseEntity.ok(html);
         } catch (Exception e) {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating offset decade chart: " + e.getMessage() + "</div>");
@@ -143,10 +145,10 @@ public class RainfallControllerV2 {
     }
 
     @GetMapping("/charts/decade")
-    public ResponseEntity<String> getDecadeChart() {
+    public ResponseEntity<String> getDecadeChart(@RequestParam(defaultValue = "10") int bundleSize) {
         try {
             StringBuilder html = new StringBuilder();
-            html.append(rainfallAnalyticsService.generateDecadeComparisonChartHtml());
+            html.append(rainfallAnalyticsService.generateDecadeComparisonChartHtml(bundleSize));
             return ResponseEntity.ok(html.toString());
         } catch (Exception e) {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating decade chart: " + e.getMessage() + "</div>");

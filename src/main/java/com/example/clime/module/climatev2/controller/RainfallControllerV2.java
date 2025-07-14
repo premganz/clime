@@ -186,6 +186,15 @@ public class RainfallControllerV2 {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating monthly offset chart: " + e.getMessage() + "</div>");
         }
     }
+
+    @GetMapping("/charts/yearly-monthly-offset")
+    public ResponseEntity<String> getYearlyChartWithMonthlyOffset(@RequestParam(defaultValue = "1") int offset, @RequestParam(defaultValue = "CSV") String dataSource) {
+        try {
+            return getChartResponse(dataSource, () -> rainfallAnalyticsService.generateYearlyBarChartWithMonthlyOffset(offset), "yearly chart with monthly offset");
+        } catch (Exception e) {
+            return ResponseEntity.ok("<div class='alert alert-danger'>Error generating yearly chart with monthly offset: " + e.getMessage() + "</div>");
+        }
+    }
     
     private ResponseEntity<String> getChartResponse(String dataSource, Supplier<String> chartGenerator, String chartType) {
         // Set the data source in the unified service

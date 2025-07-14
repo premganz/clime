@@ -36,6 +36,11 @@ public class LandingController {
         return "climate/index.html";
     }
 
+    @GetMapping("/climate-charts")
+    public String climateChartsPage() {
+        return "climate-charts.html";
+    }
+
     @GetMapping("/api/landing")
     @ResponseBody
     public String landing() {

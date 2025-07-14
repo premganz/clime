@@ -58,13 +58,40 @@ public class ChartFunctionalityTest {
 
     @Test
     public void testDecadeChart() {
-        // Test decade chart with KWS data
-        ResponseEntity<String> response = rainfallControllerV2.getDecadeChart("KWS");
+        // Test decade chart with KWS data and default bundle size
+        ResponseEntity<String> response = rainfallControllerV2.getDecadeChart(10, "KWS");
         assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody());
         
         // Should not contain the restriction message
         assertFalse(response.getBody().contains("Chart not available for KWS data"));
+    }
+
+    @Test
+    public void testBundledChartFunctionality() {
+        // Test bundled chart with different bundle sizes
+        ResponseEntity<String> response5Years = rainfallControllerV2.getDecadeChart(5, "CSV");
+        assertEquals(200, response5Years.getStatusCodeValue());
+        assertNotNull(response5Years.getBody());
+        assertTrue(response5Years.getBody().contains("5-Year Bundle"), "Should contain bundle size in title");
+        assertTrue(response5Years.getBody().contains("Bundle Size:</strong> 5 years"), "Should contain bundle size in summary");
+        
+        ResponseEntity<String> response10Years = rainfallControllerV2.getDecadeChart(10, "CSV");
+        assertEquals(200, response10Years.getStatusCodeValue());
+        assertNotNull(response10Years.getBody());
+        assertTrue(response10Years.getBody().contains("10-Year Bundle"), "Should contain bundle size in title");
+        assertTrue(response10Years.getBody().contains("Bundle Size:</strong> 10 years"), "Should contain bundle size in summary");
+    }
+
+    @Test
+    public void testBundledChartWithOffset() {
+        // Test bundled chart with offset functionality
+        ResponseEntity<String> response = rainfallControllerV2.getDecadeOffsetChart(2, 5, "CSV");
+        assertEquals(200, response.getStatusCodeValue());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().contains("(Offset: 2)"), "Should contain offset in title");
+        assertTrue(response.getBody().contains("Bundle Size:</strong> 5 years"), "Should contain bundle size in summary");
+        assertTrue(response.getBody().contains("Offset:</strong> 2 years"), "Should contain offset in summary");
     }
 
     @Test

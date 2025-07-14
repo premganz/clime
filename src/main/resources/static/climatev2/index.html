@@ -138,9 +138,14 @@
                                 <button id="monthlyTrendChartButton" class="btn btn-outline-warning">📈 Monthly Trend</button>
                             </div>
                             <div class="input-group mb-2">
-                                <span class="input-group-text">Decade Offset</span>
+                                <span class="input-group-text">Bundle Size</span>
+                                <input type="number" id="bundleSizeInput" class="form-control" min="1" max="50" value="10" style="max-width:70px;">
+                                <button id="decadeChartButton" class="btn btn-outline-info">📆 Bundled Chart</button>
+                            </div>
+                            <div class="input-group mb-2">
+                                <span class="input-group-text">Bundle Offset</span>
                                 <input type="number" id="decadeOffsetInput" class="form-control" min="0" max="9" value="0" style="max-width:70px;">
-                                <button id="decadeOffsetChartButton" class="btn btn-outline-info">📆 Decade Comparison (Offset)</button>
+                                <button id="decadeOffsetChartButton" class="btn btn-outline-info">📆 Bundled Chart (Offset)</button>
                             </div>
                             <div class="input-group mb-2">
                                 <span class="input-group-text">Monthly Offset</span>
@@ -161,7 +166,6 @@
                                 <button id="monthlyOffsetChartButton" class="btn btn-outline-warning">📊 Year-wise (Monthly Offset)</button>
                             </div>
                             <button id="yearWiseChartButton" class="btn btn-outline-primary">📊 Year-wise Chart</button>
-                            <button id="decadeChartButton" class="btn btn-outline-info">📆 Decade Comparison (Standard)</button>
                             <button id="chennaiRainfallButton" class="btn btn-outline-success mt-2">🌧️ Chennai Rainfall Trend</button>
                             <button id="kwsRainfallAnalyticsButton" class="btn btn-outline-primary mt-2">🌐 KWS Rainfall Analytics</button>
                         </div>
@@ -406,16 +410,17 @@
             if (decadeOffsetChartBtn) {
                 decadeOffsetChartBtn.onclick = function() {
                     var offset = document.getElementById('decadeOffsetInput').value || 0;
+                    var bundleSize = document.getElementById('bundleSizeInput').value || 10;
                     var dataSource = getCurrentDataSource();
-                    showMessage('🔄 Generating offset decade chart...', 'blue');
-                    fetch('/api/rainfallv2/charts/decade-offset?offset=' + offset + '&dataSource=' + dataSource)
+                    showMessage('🔄 Generating bundled chart with offset...', 'blue');
+                    fetch('/api/rainfallv2/charts/decade-offset?offset=' + offset + '&bundleSize=' + bundleSize + '&dataSource=' + dataSource)
                         .then(function(response) { return response.text(); })
                         .then(function(data) {
                             var dataElement = document.getElementById('rainfallData');
                             if (dataElement) {
                                 dataElement.innerHTML = data;
                             }
-                            showMessage('✅ Offset decade chart generated!', 'green');
+                            showMessage('✅ Bundled chart with offset generated!', 'green');
                         })
                         .catch(function(error) {
                             showMessage('❌ Error: ' + error.message, 'red');
@@ -469,16 +474,17 @@
             var decadeChartBtn = document.getElementById('decadeChartButton');
             if (decadeChartBtn) {
                 decadeChartBtn.onclick = function() {
+                    var bundleSize = document.getElementById('bundleSizeInput').value || 10;
                     var dataSource = getCurrentDataSource();
-                    showMessage('🔄 Generating decade comparison chart...', 'blue');
-                    fetch('/api/rainfallv2/charts/decade?dataSource=' + dataSource)
+                    showMessage('🔄 Generating bundled chart...', 'blue');
+                    fetch('/api/rainfallv2/charts/decade?bundleSize=' + bundleSize + '&dataSource=' + dataSource)
                         .then(function(response) { return response.text(); })
                         .then(function(data) {
                             var dataElement = document.getElementById('rainfallData');
                             if (dataElement) {
                                 dataElement.innerHTML = data;
                             }
-                            showMessage('✅ Decade chart generated!', 'green');
+                            showMessage('✅ Bundled chart generated!', 'green');
                         })
                         .catch(function(error) {
                             showMessage('❌ Error: ' + error.message, 'red');

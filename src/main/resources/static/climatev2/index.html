@@ -142,6 +142,25 @@
                                 <input type="number" id="decadeOffsetInput" class="form-control" min="0" max="9" value="0" style="max-width:70px;">
                                 <button id="decadeOffsetChartButton" class="btn btn-outline-info">📆 Decade Comparison (Offset)</button>
                             </div>
+                            <div class="input-group mb-2">
+                                <span class="input-group-text">Monthly Offset</span>
+                                <select id="monthlyOffsetSelect" class="form-select" style="max-width:90px;">
+                                    <option value="1">Feb</option>
+                                    <option value="2">Mar</option>
+                                    <option value="3">Apr</option>
+                                    <option value="4">May</option>
+                                    <option value="5">Jun</option>
+                                    <option value="6">Jul</option>
+                                    <option value="7">Aug</option>
+                                    <option value="8">Sep</option>
+                                    <option value="9">Oct</option>
+                                    <option value="10">Nov</option>
+                                    <option value="11">Dec</option>
+                                    <option value="12">Jan</option>
+                                </select>
+                                <button id="monthlyOffsetChartButton" class="btn btn-outline-warning">📊 Year-wise (Monthly Offset)</button>
+                            </div>
+                            <button id="yearWiseChartButton" class="btn btn-outline-primary">📊 Year-wise Chart</button>
                             <button id="decadeChartButton" class="btn btn-outline-info">📆 Decade Comparison (Standard)</button>
                             <button id="chennaiRainfallButton" class="btn btn-outline-success mt-2">🌧️ Chennai Rainfall Trend</button>
                             <button id="kwsRainfallAnalyticsButton" class="btn btn-outline-primary mt-2">🌐 KWS Rainfall Analytics</button>
@@ -397,6 +416,49 @@
                                 dataElement.innerHTML = data;
                             }
                             showMessage('✅ Offset decade chart generated!', 'green');
+                        })
+                        .catch(function(error) {
+                            showMessage('❌ Error: ' + error.message, 'red');
+                        });
+                };
+            }
+
+            var monthlyOffsetChartBtn = document.getElementById('monthlyOffsetChartButton');
+            if (monthlyOffsetChartBtn) {
+                monthlyOffsetChartBtn.onclick = function() {
+                    var offset = document.getElementById('monthlyOffsetSelect').value || 1;
+                    var dataSource = getCurrentDataSource();
+                    var monthNames = ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan'];
+                    var startMonth = monthNames[offset - 1];
+                    showMessage('🔄 Generating yearly chart starting from ' + startMonth + '...', 'blue');
+                    fetch('/api/rainfallv2/charts/yearly-monthly-offset?offset=' + offset + '&dataSource=' + dataSource)
+                        .then(function(response) { return response.text(); })
+                        .then(function(data) {
+                            var dataElement = document.getElementById('rainfallData');
+                            if (dataElement) {
+                                dataElement.innerHTML = data;
+                            }
+                            showMessage('✅ Yearly chart with monthly offset generated!', 'green');
+                        })
+                        .catch(function(error) {
+                            showMessage('❌ Error: ' + error.message, 'red');
+                        });
+                };
+            }
+
+            var yearWiseChartBtn = document.getElementById('yearWiseChartButton');
+            if (yearWiseChartBtn) {
+                yearWiseChartBtn.onclick = function() {
+                    var dataSource = getCurrentDataSource();
+                    showMessage('🔄 Generating year-wise chart...', 'blue');
+                    fetch('/api/rainfallv2/charts/year-wise?dataSource=' + dataSource)
+                        .then(function(response) { return response.text(); })
+                        .then(function(data) {
+                            var dataElement = document.getElementById('rainfallData');
+                            if (dataElement) {
+                                dataElement.innerHTML = data;
+                            }
+                            showMessage('✅ Year-wise chart generated!', 'green');
                         })
                         .catch(function(error) {
                             showMessage('❌ Error: ' + error.message, 'red');

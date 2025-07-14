@@ -170,21 +170,18 @@ public class RainfallControllerV2 {
     }
     
     private ResponseEntity<String> getChartResponse(String dataSource, Supplier<String> chartGenerator, String chartType) {
-        if ("KWS".equalsIgnoreCase(dataSource)) {
-            // KWS data doesn't support advanced charts yet
-            return ResponseEntity.ok("<div class='alert alert-warning'>" +
-                    "<strong>Chart not available for KWS data</strong><br>" +
-                    "Advanced " + chartType + " functionality is currently optimized for CSV data. " +
-                    "Please switch to CSV data source for full analytics capabilities." +
-                    "</div>");
-        } else {
-            // CSV data - use analytics service
-            try {
-                String html = chartGenerator.get();
-                return ResponseEntity.ok(html);
-            } catch (Exception e) {
-                return ResponseEntity.ok("<div class='alert alert-danger'>Error generating " + chartType + ": " + e.getMessage() + "</div>");
-            }
+        // Set the data source in the unified service
+        try {
+            DataSource ds = DataSource.valueOf(dataSource.toUpperCase());
+            unifiedRainfallDataService.setDataSource(ds);
+            
+            // Generate chart using the analytics service (now works with both CSV and KWS data)
+            String html = chartGenerator.get();
+            return ResponseEntity.ok(html);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.ok("<div class='alert alert-danger'>Invalid data source: " + dataSource + "</div>");
+        } catch (Exception e) {
+            return ResponseEntity.ok("<div class='alert alert-danger'>Error generating " + chartType + ": " + e.getMessage() + "</div>");
         }
     }
 }

@@ -72,6 +72,45 @@ public class UnifiedRainfallDataService {
         }
     }
     
+    public double getAverageRainfallForMonth(int month) {
+        if (currentDataSource == DataSource.CSV) {
+            return csvDataService.getAverageRainfallForMonth(month);
+        } else {
+            // For KWS data, calculate the average from the available data
+            try {
+                List<RainfallRecord> allData = kwsDataService.getAllData();
+                return allData.stream()
+                    .mapToDouble(record -> getMonthValue(record, month))
+                    .average()
+                    .orElse(0.0);
+            } catch (Exception e) {
+                System.err.println("Error calculating average rainfall for month " + month + ": " + e.getMessage());
+                return 0.0;
+            }
+        }
+    }
+    
+    /**
+     * Helper method to get rainfall value for a specific month from a record.
+     */
+    private double getMonthValue(RainfallRecord record, int month) {
+        switch (month) {
+            case 1: return record.getJan();
+            case 2: return record.getFeb();
+            case 3: return record.getMar();
+            case 4: return record.getApril();
+            case 5: return record.getMay();
+            case 6: return record.getJune();
+            case 7: return record.getJuly();
+            case 8: return record.getAug();
+            case 9: return record.getSept();
+            case 10: return record.getOct();
+            case 11: return record.getNov();
+            case 12: return record.getDec();
+            default: return 0.0;
+        }
+    }
+    
     public String getDataSourceInfo() {
         StringBuilder info = new StringBuilder();
         info.append("<div class='alert alert-info'>");

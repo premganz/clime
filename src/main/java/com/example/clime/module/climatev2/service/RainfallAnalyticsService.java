@@ -716,6 +716,218 @@ public class RainfallAnalyticsService {
         return new double[]{slope, intercept};
     }
 
+    /**
+     * Generate a year-wise rainfall bar chart.
+     * @return HTML string with SVG bar chart
+     */
+    public String generateYearlyRainfallBarChartHtml() {
+        try {
+            List<RainfallRecord> allData = rainfallDataService.getAllData();
+            if (allData.isEmpty()) return "<div>No data available.</div>";
+
+            int minYear = allData.stream().mapToInt(RainfallRecord::getYear).min().orElse(1901);
+            int maxYear = allData.stream().mapToInt(RainfallRecord::getYear).max().orElse(2021);
+            double maxRain = allData.stream().mapToDouble(RainfallRecord::getTotal).max().orElse(2000.0);
+            double minRain = allData.stream().mapToDouble(RainfallRecord::getTotal).min().orElse(0.0);
+
+            int chartWidth = 800;
+            int chartHeight = 300;
+            int leftPad = 60;
+            int rightPad = 30;
+            int topPad = 30;
+            int bottomPad = 50;
+            int n = allData.size();
+            double barWidth = Math.min(10, (double)(chartWidth - leftPad - rightPad) / n);
+
+            StringBuilder html = new StringBuilder();
+            html.append("<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; margin: 20px 0;'>");
+            html.append("<h4>📊 Year-wise Rainfall Bar Chart (" + minYear + "–" + maxYear + ")</h4>");
+            html.append("<div style='position: relative; width: 100%; height: 450px; background: white; border: 1px solid #ddd; padding: 20px; box-sizing: border-box; overflow-x: auto;'>");
+            html.append("<svg width='" + Math.max(chartWidth, n * 12) + "' height='" + (chartHeight + topPad + bottomPad) + "' style='overflow: visible;'>");
+
+            // Draw grid lines and y-axis labels
+            int gridLines = 5;
+            for (int i = 0; i <= gridLines; i++) {
+                double yVal = minRain + (maxRain - minRain) * (gridLines - i) / gridLines;
+                int y = (int)(topPad + ((maxRain - yVal) / (maxRain - minRain)) * chartHeight);
+                html.append(String.format("<line x1='%d' y1='%d' x2='%d' y2='%d' stroke='#ecf0f1' stroke-width='1'/>",
+                    leftPad, y, Math.max(chartWidth - rightPad, leftPad + n * 12), y));
+                html.append(String.format("<text x='%d' y='%d' text-anchor='end' font-size='10' fill='#7f8c8d'>%.0f</text>",
+                    leftPad - 5, y + 4, yVal));
+            }
+
+            // Draw bars
+            for (int i = 0; i < n; i++) {
+                RainfallRecord record = allData.get(i);
+                double x = leftPad + i * barWidth + i * 2; // Add small spacing between bars
+                double barHeight = ((record.getTotal() - minRain) / (maxRain - minRain)) * chartHeight;
+                double barY = topPad + chartHeight - barHeight;
+                
+                // Color bars based on rainfall amount
+                String color = "#3498db"; // Default blue
+                if (record.getTotal() > (minRain + (maxRain - minRain) * 0.8)) {
+                    color = "#27ae60"; // High rainfall - green
+                } else if (record.getTotal() < (minRain + (maxRain - minRain) * 0.3)) {
+                    color = "#e74c3c"; // Low rainfall - red
+                } else if (record.getTotal() > (minRain + (maxRain - minRain) * 0.6)) {
+                    color = "#f39c12"; // Medium-high rainfall - orange
+                }
+
+                html.append(String.format("<rect x='%.1f' y='%.1f' width='%.1f' height='%.1f' fill='%s' stroke='#2c3e50' stroke-width='0.5' rx='1'/>",
+                    x, barY, barWidth, barHeight, color));
+
+                // Add year labels (every 5th year for readability)
+                if (i % 5 == 0 || i == n - 1) {
+                    html.append(String.format("<text x='%.1f' y='%d' text-anchor='middle' font-size='9' fill='#7f8c8d' transform='rotate(-45, %.1f, %d)'>%d</text>",
+                        x + barWidth/2, chartHeight + topPad + 20, x + barWidth/2, chartHeight + topPad + 20, record.getYear()));
+                }
+            }
+
+            // Draw axes
+            html.append(String.format("<line x1='%d' y1='%d' x2='%d' y2='%d' stroke='#2c3e50' stroke-width='2'/>",
+                leftPad, topPad, leftPad, chartHeight + topPad));
+            html.append(String.format("<line x1='%d' y1='%d' x2='%d' y2='%d' stroke='#2c3e50' stroke-width='2'/>",
+                leftPad, chartHeight + topPad, Math.max(chartWidth - rightPad, leftPad + n * 12), chartHeight + topPad));
+
+            // Axis labels
+            html.append("<text x='20' y='" + (topPad + chartHeight/2) + "' text-anchor='middle' font-size='12' font-weight='bold' fill='#2c3e50' transform='rotate(-90, 20, " + (topPad + chartHeight/2) + ")'>Rainfall (mm)</text>");
+            html.append("<text x='" + (leftPad + (n * barWidth)/2) + "' y='" + (chartHeight + topPad + 45) + "' text-anchor='middle' font-size='12' font-weight='bold' fill='#2c3e50'>Year</text>");
+
+            html.append("</svg>");
+            html.append("</div>");
+
+            // Add summary statistics
+            double avgRainfall = allData.stream().mapToDouble(RainfallRecord::getTotal).average().orElse(0.0);
+            html.append("<div style='margin-top: 15px; font-size: 14px; color: #7f8c8d;'>");
+            html.append(String.format("<strong>Summary:</strong> Average: %.1f mm | Highest: %.1f mm | Lowest: %.1f mm | Range: %.1f mm",
+                avgRainfall, maxRain, minRain, maxRain - minRain));
+            html.append("</div>");
+            html.append("</div>");
+            return html.toString();
+        } catch (Exception e) {
+            return "<div class='alert alert-danger'>Error generating yearly bar chart: " + e.getMessage() + "</div>";
+        }
+    }
+
+    /**
+     * Generate a yearly rainfall chart with monthly offset.
+     * @param monthOffset Offset month (1-12) where 1=Jan start, 12=Dec start
+     * @return HTML string with SVG chart
+     */
+    public String generateOffsetYearlyChartHtml(int monthOffset) {
+        try {
+            List<RainfallRecord> allData = rainfallDataService.getAllData();
+            if (allData.isEmpty()) return "<div>No data available.</div>";
+            
+            // Validate month offset
+            if (monthOffset < 1 || monthOffset > 12) {
+                return "<div class='alert alert-danger'>Invalid month offset. Please specify a value between 1 (Jan) and 12 (Dec).</div>";
+            }
+
+            String[] monthNames = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+            String startMonth = monthNames[monthOffset - 1];
+
+            // Calculate offset totals for each year
+            List<Double> offsetYearlyTotals = new ArrayList<>();
+            List<Integer> years = new ArrayList<>();
+            
+            for (RainfallRecord record : allData) {
+                double offsetTotal = 0.0;
+                
+                // Sum rainfall from offset month to month-1 of next fiscal year
+                for (int i = 0; i < 12; i++) {
+                    int actualMonth = ((monthOffset - 1 + i) % 12) + 1;
+                    offsetTotal += record.getRainfallForMonth(actualMonth);
+                }
+                
+                offsetYearlyTotals.add(offsetTotal);
+                years.add(record.getYear());
+            }
+
+            int minYear = years.stream().mapToInt(Integer::intValue).min().orElse(1901);
+            int maxYear = years.stream().mapToInt(Integer::intValue).max().orElse(2021);
+            double maxRain = offsetYearlyTotals.stream().mapToDouble(Double::doubleValue).max().orElse(2000.0);
+            double minRain = offsetYearlyTotals.stream().mapToDouble(Double::doubleValue).min().orElse(0.0);
+
+            int chartWidth = 700;
+            int chartHeight = 280;
+            int leftPad = 60;
+            int rightPad = 30;
+            int topPad = 30;
+            int bottomPad = 50;
+            int n = offsetYearlyTotals.size();
+            double xStep = (double)(chartWidth - leftPad - rightPad) / (n - 1);
+
+            StringBuilder html = new StringBuilder();
+            html.append("<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; margin: 20px 0;'>");
+            html.append("<h4>📈 Offset Yearly Rainfall Chart (Starting from " + startMonth + ") (" + minYear + "–" + maxYear + ")</h4>");
+            html.append("<div style='position: relative; width: 100%; height: 400px; background: white; border: 1px solid #ddd; padding: 20px; box-sizing: border-box;'>");
+            html.append("<svg width='100%' height='350' viewBox='0 0 " + chartWidth + " " + (chartHeight + topPad + bottomPad) + "' style='overflow: visible;'>");
+
+            // Draw grid lines and y-axis labels
+            int gridLines = 5;
+            for (int i = 0; i <= gridLines; i++) {
+                double yVal = minRain + (maxRain - minRain) * (gridLines - i) / gridLines;
+                int y = (int)(topPad + ((maxRain - yVal) / (maxRain - minRain)) * chartHeight);
+                html.append(String.format("<line x1='%d' y1='%d' x2='%d' y2='%d' stroke='#ecf0f1' stroke-width='1'/>",
+                    leftPad, y, chartWidth - rightPad, y));
+                html.append(String.format("<text x='%d' y='%d' text-anchor='end' font-size='10' fill='#7f8c8d'>%.0f</text>",
+                    leftPad - 5, y + 4, yVal));
+            }
+
+            // Draw x-axis labels (every 10th year)
+            int labelStep = 10;
+            for (int i = 0; i < n; i++) {
+                int year = years.get(i);
+                if ((year - minYear) % labelStep == 0 || i == n - 1) {
+                    double x = leftPad + i * xStep;
+                    html.append(String.format("<text x='%.1f' y='%d' text-anchor='middle' font-size='10' fill='#7f8c8d'>%d</text>",
+                        x, chartHeight + topPad + 20, year));
+                }
+            }
+
+            // Draw axes
+            html.append(String.format("<line x1='%d' y1='%d' x2='%d' y2='%d' stroke='#2c3e50' stroke-width='2'/>",
+                leftPad, topPad, leftPad, chartHeight + topPad));
+            html.append(String.format("<line x1='%d' y1='%d' x2='%d' y2='%d' stroke='#2c3e50' stroke-width='2'/>",
+                leftPad, chartHeight + topPad, chartWidth - rightPad, chartHeight + topPad));
+
+            // Draw line path
+            html.append("<polyline fill='none' stroke='#9b59b6' stroke-width='3' points='");
+            for (int i = 0; i < n; i++) {
+                double x = leftPad + i * xStep;
+                double y = topPad + ((maxRain - offsetYearlyTotals.get(i)) / (maxRain - minRain)) * chartHeight;
+                html.append(String.format("%.1f,%.1f ", x, y));
+            }
+            html.append("'/>");
+
+            // Draw dots for each year (every 5th year for clarity)
+            for (int i = 0; i < n; i += 5) {
+                double x = leftPad + i * xStep;
+                double y = topPad + ((maxRain - offsetYearlyTotals.get(i)) / (maxRain - minRain)) * chartHeight;
+                html.append(String.format("<circle cx='%.1f' cy='%.1f' r='3' fill='#8e44ad' stroke='#fff' stroke-width='1.5'/>", x, y));
+            }
+
+            // Axis labels
+            html.append("<text x='20' y='" + (topPad + chartHeight/2) + "' text-anchor='middle' font-size='12' font-weight='bold' fill='#2c3e50' transform='rotate(-90, 20, " + (topPad + chartHeight/2) + ")'>Rainfall (mm)</text>");
+            html.append("<text x='" + (chartWidth/2) + "' y='" + (chartHeight + topPad + 40) + "' text-anchor='middle' font-size='12' font-weight='bold' fill='#2c3e50'>Year (Offset from " + startMonth + ")</text>");
+
+            html.append("</svg>");
+            html.append("</div>");
+
+            // Add summary statistics
+            double avgRainfall = offsetYearlyTotals.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+            html.append("<div style='margin-top: 15px; font-size: 14px; color: #7f8c8d;'>");
+            html.append(String.format("<strong>Offset Summary (starting from %s):</strong> Average: %.1f mm | Highest: %.1f mm | Lowest: %.1f mm | Range: %.1f mm",
+                startMonth, avgRainfall, maxRain, minRain, maxRain - minRain));
+            html.append("</div>");
+            html.append("</div>");
+            return html.toString();
+        } catch (Exception e) {
+            return "<div class='alert alert-danger'>Error generating offset yearly chart: " + e.getMessage() + "</div>";
+        }
+    }
+
     public String generateRainfallStatisticsHtml() {
         try {
             Map<String, Object> stats = rainfallDataService.getBasicStatistics();

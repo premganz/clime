@@ -168,6 +168,24 @@ public class RainfallControllerV2 {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating monthly trend chart: " + e.getMessage() + "</div>");
         }
     }
+
+    @GetMapping("/charts/yearly-bar")
+    public ResponseEntity<String> getYearlyBarChart(@RequestParam(defaultValue = "CSV") String dataSource) {
+        try {
+            return getChartResponse(dataSource, () -> rainfallAnalyticsService.generateYearlyRainfallBarChartHtml(), "yearly bar chart");
+        } catch (Exception e) {
+            return ResponseEntity.ok("<div class='alert alert-danger'>Error generating yearly bar chart: " + e.getMessage() + "</div>");
+        }
+    }
+
+    @GetMapping("/charts/yearly-offset")
+    public ResponseEntity<String> getYearlyOffsetChart(@RequestParam int monthOffset, @RequestParam(defaultValue = "CSV") String dataSource) {
+        try {
+            return getChartResponse(dataSource, () -> rainfallAnalyticsService.generateOffsetYearlyChartHtml(monthOffset), "yearly offset chart");
+        } catch (Exception e) {
+            return ResponseEntity.ok("<div class='alert alert-danger'>Error generating yearly offset chart: " + e.getMessage() + "</div>");
+        }
+    }
     
     private ResponseEntity<String> getChartResponse(String dataSource, Supplier<String> chartGenerator, String chartType) {
         // Set the data source in the unified service

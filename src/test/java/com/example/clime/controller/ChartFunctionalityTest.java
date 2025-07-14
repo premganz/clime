@@ -22,7 +22,7 @@ public class ChartFunctionalityTest {
     @Test
     public void testCSVDataSourceCharts() {
         // Test CSV data source charts
-        ResponseEntity<String> response = rainfallControllerV2.getAnnualChart("CSV");
+        ResponseEntity<String> response = rainfallControllerV2.getAnnualChart("CSV", null);
         assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody());
         
@@ -37,7 +37,7 @@ public class ChartFunctionalityTest {
     @Test
     public void testKWSDataSourceCharts() {
         // Test KWS data source charts - this should now work!
-        ResponseEntity<String> response = rainfallControllerV2.getAnnualChart("KWS");
+        ResponseEntity<String> response = rainfallControllerV2.getAnnualChart("KWS", null);
         assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody());
         

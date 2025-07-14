@@ -14,6 +14,21 @@ public class RainfallAnalyticsService {
     @Autowired
     @Qualifier("unifiedRainfallDataService")
     private UnifiedRainfallDataService rainfallDataService;
+    
+    // Thread-local variable to track excluded years for this request
+    private ThreadLocal<String> excludedYears = new ThreadLocal<>();
+    
+    public void setExcludedYears(String excludedYears) {
+        this.excludedYears.set(excludedYears);
+    }
+    
+    public String getExcludedYears() {
+        return this.excludedYears.get();
+    }
+    
+    public void clearExcludedYears() {
+        this.excludedYears.remove();
+    }
 
     /**
      * Generate a yearly rainfall line graph as SVG (no JS, fits analytics dashboard).
@@ -21,7 +36,15 @@ public class RainfallAnalyticsService {
      */
     public String generateYearlyRainfallLineChartHtml() {
         try {
-            List<RainfallRecord> allData = rainfallDataService.getAllData();
+            List<RainfallRecord> allData;
+            String excludedYearsStr = getExcludedYears();
+            
+            if (excludedYearsStr != null && !excludedYearsStr.trim().isEmpty()) {
+                allData = rainfallDataService.getAllData(excludedYearsStr);
+            } else {
+                allData = rainfallDataService.getAllData();
+            }
+            
             if (allData.isEmpty()) return "<div>No data available.</div>";
 
             int minYear = allData.stream().mapToInt(RainfallRecord::getYear).min().orElse(1901);
@@ -39,6 +62,12 @@ public class RainfallAnalyticsService {
         double xStep = (double)(chartWidth - leftPad - rightPad) / (n - 1);
 
         StringBuilder html = new StringBuilder();
+        
+        // Add excluded years info if applicable
+        if (excludedYearsStr != null && !excludedYearsStr.trim().isEmpty()) {
+            html.append(rainfallDataService.getExcludedYearsInfo(excludedYearsStr));
+        }
+        
         html.append("<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; margin: 20px 0;'>");
         html.append("<h4>📈 Yearly Rainfall (" + minYear + "–" + maxYear + ")</h4>");
         html.append("<div style='position: relative; width: 100%; height: 400px; background: white; border: 1px solid #ddd; padding: 20px; box-sizing: border-box;'>");
@@ -208,6 +237,13 @@ public class RainfallAnalyticsService {
     
     public String generateMonthlyAverageChartHtml() {
         StringBuilder html = new StringBuilder();
+        String excludedYearsStr = getExcludedYears();
+        
+        // Add excluded years info if applicable
+        if (excludedYearsStr != null && !excludedYearsStr.trim().isEmpty()) {
+            html.append(rainfallDataService.getExcludedYearsInfo(excludedYearsStr));
+        }
+        
         html.append("<div class='chart-container' style='margin: 20px 0;'>");
         html.append("<h4>📊 Monthly Rainfall Averages (1901-2021)</h4>");
         html.append("<canvas id='monthlyChart' width='600' height='400'></canvas>");
@@ -226,10 +262,14 @@ public class RainfallAnalyticsService {
         html.append("label: 'Average Rainfall (mm)',");
         html.append("data: [");
         
-        // Monthly averages
+        // Monthly averages - use filtered data if excluded years are specified
         for (int month = 1; month <= 12; month++) {
             if (month > 1) html.append(",");
-            html.append(String.format("%.1f", rainfallDataService.getAverageRainfallForMonth(month)));
+            if (excludedYearsStr != null && !excludedYearsStr.trim().isEmpty()) {
+                html.append(String.format("%.1f", rainfallDataService.getAverageRainfallForMonth(month, excludedYearsStr)));
+            } else {
+                html.append(String.format("%.1f", rainfallDataService.getAverageRainfallForMonth(month)));
+            }
         }
         html.append("],");
         html.append("backgroundColor: [");
@@ -265,7 +305,14 @@ public class RainfallAnalyticsService {
     
     public String generateDecadeComparisonChartHtml() {
         try {
-            List<RainfallRecord> allData = rainfallDataService.getAllData();
+            List<RainfallRecord> allData;
+            String excludedYearsStr = getExcludedYears();
+            
+            if (excludedYearsStr != null && !excludedYearsStr.trim().isEmpty()) {
+                allData = rainfallDataService.getAllData(excludedYearsStr);
+            } else {
+                allData = rainfallDataService.getAllData();
+            }
         
         // Group by decades
         Map<String, List<Double>> decadeData = new TreeMap<>();
@@ -276,6 +323,11 @@ public class RainfallAnalyticsService {
         }
         
         StringBuilder html = new StringBuilder();
+        
+        // Add excluded years info if applicable
+        if (excludedYearsStr != null && !excludedYearsStr.trim().isEmpty()) {
+            html.append(rainfallDataService.getExcludedYearsInfo(excludedYearsStr));
+        }
         
         // Generate SVG chart (no JavaScript required)
         html.append("<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; margin: 20px 0;'>");
@@ -718,9 +770,16 @@ public class RainfallAnalyticsService {
 
     public String generateRainfallStatisticsHtml() {
         try {
+            String excludedYearsStr = getExcludedYears();
             Map<String, Object> stats = rainfallDataService.getBasicStatistics();
         
         StringBuilder html = new StringBuilder();
+        
+        // Add excluded years info if applicable
+        if (excludedYearsStr != null && !excludedYearsStr.trim().isEmpty()) {
+            html.append(rainfallDataService.getExcludedYearsInfo(excludedYearsStr));
+        }
+        
         html.append("<div class='card'>");
         html.append("<div class='card-header'><h5>📊 Rainfall Statistics Summary</h5></div>");
         html.append("<div class='card-body'>");

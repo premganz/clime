@@ -17,9 +17,9 @@ public class RainfallControllerV2 {
     // ...existing code...
 
     @GetMapping("/charts/yearly-svg")
-    public ResponseEntity<String> getYearlySvgChart() {
+    public ResponseEntity<String> getYearlySvgChart(@RequestParam(defaultValue = "csv") String dataSource) {
         try {
-            String html = rainfallAnalyticsService.generateYearlyRainfallLineChartHtml();
+            String html = rainfallAnalyticsService.generateYearlyRainfallLineChartHtml(dataSource);
             return ResponseEntity.ok(html);
         } catch (Exception e) {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating yearly SVG chart: " + e.getMessage() + "</div>");

@@ -1,5 +1,6 @@
 package com.example.clime.module.climatev2.service;
 
+import com.example.clime.module.climatev2.model.DataSource;
 import com.example.clime.module.climatev2.model.RainfallRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -13,19 +14,60 @@ public class RainfallAnalyticsService {
     @Autowired
     @Qualifier("rainfallDataServiceV2")
     private RainfallDataService rainfallDataService;
+    
+    @Autowired
+    @Qualifier("kwsRainfallDataService")
+    private KwsRainfallDataService kwsRainfallDataService;
+
+    /**
+     * Generate a yearly rainfall line graph as SVG (no JS, fits analytics dashboard).
+     * @param dataSource the data source to use ("csv" or "kws")
+     * @return HTML string with SVG chart
+     */
+    public String generateYearlyRainfallLineChartHtml(String dataSource) {
+        try {
+            List<RainfallRecord> allData = getDataFromSource(dataSource);
+            if (allData.isEmpty()) return "<div>No data available.</div>";
+
+            return generateYearlyRainfallLineChartHtmlInternal(allData, dataSource);
+        } catch (Exception e) {
+            return "<div class='alert alert-danger'>Error loading data: " + e.getMessage() + "</div>";
+        }
+    }
 
     /**
      * Generate a yearly rainfall line graph as SVG (no JS, fits analytics dashboard).
      * @return HTML string with SVG chart
      */
     public String generateYearlyRainfallLineChartHtml() {
-        List<RainfallRecord> allData = rainfallDataService.getAllData();
+        return generateYearlyRainfallLineChartHtml("csv");
+    }
+    
+    /**
+     * Get the appropriate data service based on data source parameter.
+     */
+    private List<RainfallRecord> getDataFromSource(String dataSource) throws Exception {
+        if ("kws".equalsIgnoreCase(dataSource)) {
+            return kwsRainfallDataService.getAllData();
+        } else {
+            return rainfallDataService.getAllData();
+        }
+    }
+    
+    /**
+     * Internal method to generate yearly rainfall chart with specified data.
+     */
+    private String generateYearlyRainfallLineChartHtmlInternal(List<RainfallRecord> allData, String dataSource) {
         if (allData.isEmpty()) return "<div>No data available.</div>";
 
         int minYear = allData.stream().mapToInt(RainfallRecord::getYear).min().orElse(1901);
         int maxYear = allData.stream().mapToInt(RainfallRecord::getYear).max().orElse(2021);
         double maxRain = allData.stream().mapToDouble(RainfallRecord::getTotal).max().orElse(2000.0);
         double minRain = allData.stream().mapToDouble(RainfallRecord::getTotal).min().orElse(0.0);
+
+        // Determine data source display name
+        String dataSourceDisplay = "kws".equalsIgnoreCase(dataSource) ? "KWS Data" : "CSV Data";
+        String dataSourceRange = "kws".equalsIgnoreCase(dataSource) ? "(2000-2025)" : "(1901-2021)";
 
         int chartWidth = 700;
         int chartHeight = 280;
@@ -38,7 +80,10 @@ public class RainfallAnalyticsService {
 
         StringBuilder html = new StringBuilder();
         html.append("<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; margin: 20px 0;'>");
-        html.append("<h4>📈 Yearly Rainfall (" + minYear + "–" + maxYear + ")</h4>");
+        html.append("<h4>📈 Yearly Rainfall (" + minYear + "–" + maxYear + ") - " + dataSourceDisplay + "</h4>");
+        html.append("<div style='margin-bottom: 10px; font-size: 14px; color: #666;'>");
+        html.append("<strong>Data Source:</strong> " + dataSourceDisplay + " " + dataSourceRange);
+        html.append("</div>");
         html.append("<div style='position: relative; width: 100%; height: 400px; background: white; border: 1px solid #ddd; padding: 20px; box-sizing: border-box;'>");
         html.append("<svg width='100%' height='350' viewBox='0 0 " + chartWidth + " " + (chartHeight + topPad + bottomPad) + "' style='overflow: visible;'>");
 

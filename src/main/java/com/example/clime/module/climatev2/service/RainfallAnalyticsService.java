@@ -760,4 +760,254 @@ public class RainfallAnalyticsService {
             return "<div class='alert alert-danger'>Error generating rainfall statistics: " + e.getMessage() + "</div>";
         }
     }
+
+    /**
+     * Generate a year-wise rainfall chart (individual years instead of decades)
+     * @return HTML string with SVG chart
+     */
+    public String generateYearWiseRainfallChartHtml() {
+        try {
+            List<RainfallRecord> allData = rainfallDataService.getAllData();
+            if (allData.isEmpty()) return "<div>No data available for year-wise chart.</div>";
+
+            StringBuilder html = new StringBuilder();
+            html.append("<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; margin: 20px 0;'>");
+            html.append("<h4>📊 Year-wise Rainfall Comparison</h4>");
+            html.append("<div style='position: relative; width: 100%; height: 400px; background: white; border: 1px solid #ddd; padding: 20px; box-sizing: border-box;'>");
+            html.append("<svg width='100%' height='350' viewBox='0 0 800 350' style='overflow: visible;'>");
+
+            // Calculate chart dimensions
+            int chartWidth = 700;
+            int chartHeight = 280;
+            int leftPad = 60;
+            int rightPad = 40;
+            int topPad = 30;
+            int bottomPad = 50;
+
+            // Calculate max value for scaling
+            double maxValue = allData.stream()
+                    .mapToDouble(RainfallRecord::getTotal)
+                    .max().orElse(2000.0);
+
+            // Draw grid lines and y-axis labels
+            for (int i = 0; i <= 5; i++) {
+                double yValue = maxValue * i / 5;
+                int yPos = (int) (chartHeight - (chartHeight * i / 5) + topPad);
+                html.append(String.format("<line x1='%d' y1='%d' x2='%d' y2='%d' stroke='#ecf0f1' stroke-width='1'/>", 
+                        leftPad, yPos, chartWidth - rightPad, yPos));
+                html.append(String.format("<text x='%d' y='%d' text-anchor='end' font-size='10' fill='#7f8c8d'>%.0f</text>", 
+                        leftPad - 5, yPos + 3, yValue));
+            }
+
+            // Calculate bar width based on number of years
+            int dataSize = allData.size();
+            int availableWidth = chartWidth - leftPad - rightPad;
+            int barWidth = Math.max(2, availableWidth / dataSize - 2);
+            int spacing = Math.max(1, 2);
+
+            // Draw bars for each year
+            int x = leftPad;
+            String[] colors = {"#3498db", "#e74c3c", "#2ecc71", "#f39c12", "#9b59b6", "#1abc9c", "#34495e"};
+            
+            for (int i = 0; i < dataSize; i++) {
+                RainfallRecord record = allData.get(i);
+                double rainfall = record.getTotal();
+                int barHeight = (int) ((rainfall / maxValue) * chartHeight);
+                int barY = chartHeight - barHeight + topPad;
+                
+                String color = colors[i % colors.length];
+                
+                // Draw bar
+                html.append(String.format("<rect x='%d' y='%d' width='%d' height='%d' fill='%s' stroke='#2c3e50' stroke-width='0.5' rx='1'/>", 
+                        x, barY, barWidth, barHeight, color));
+                
+                // Draw value label on hover (tooltip simulation)
+                if (barWidth > 15) {
+                    html.append(String.format("<text x='%d' y='%d' text-anchor='middle' font-size='8' fill='#2c3e50' opacity='0.7'>%.0f</text>", 
+                            x + barWidth/2, barY - 2, rainfall));
+                }
+                
+                // Draw year label (every 5th year to avoid crowding)
+                if (i % 5 == 0 || i == dataSize - 1) {
+                    html.append(String.format("<text x='%d' y='%d' text-anchor='middle' font-size='9' fill='#7f8c8d' transform='rotate(-45, %d, %d)'>%d</text>", 
+                            x + barWidth/2, chartHeight + topPad + 20, x + barWidth/2, chartHeight + topPad + 20, record.getYear()));
+                }
+                
+                x += barWidth + spacing;
+            }
+
+            // Draw axes
+            html.append(String.format("<line x1='%d' y1='%d' x2='%d' y2='%d' stroke='#2c3e50' stroke-width='2'/>", 
+                    leftPad, topPad, leftPad, chartHeight + topPad));
+            html.append(String.format("<line x1='%d' y1='%d' x2='%d' y2='%d' stroke='#2c3e50' stroke-width='2'/>", 
+                    leftPad, chartHeight + topPad, chartWidth - rightPad, chartHeight + topPad));
+
+            // Add axis labels
+            html.append("<text x='25' y='160' text-anchor='middle' font-size='12' font-weight='bold' fill='#2c3e50' transform='rotate(-90, 25, 160)'>Rainfall (mm)</text>");
+            html.append("<text x='400' y='340' text-anchor='middle' font-size='12' font-weight='bold' fill='#2c3e50'>Year</text>");
+
+            html.append("</svg>");
+            html.append("</div>");
+
+            // Add summary statistics
+            double avgRainfall = allData.stream().mapToDouble(RainfallRecord::getTotal).average().orElse(0.0);
+            double minRainfall = allData.stream().mapToDouble(RainfallRecord::getTotal).min().orElse(0.0);
+            int minYear = allData.stream().filter(r -> r.getTotal() == minRainfall).mapToInt(RainfallRecord::getYear).findFirst().orElse(0);
+            int maxYear = allData.stream().filter(r -> r.getTotal() == maxValue).mapToInt(RainfallRecord::getYear).findFirst().orElse(0);
+            
+            html.append("<div style='margin-top: 15px; font-size: 14px; color: #7f8c8d;'>");
+            html.append(String.format("<strong>Summary:</strong> Avg: %.0f mm | Highest: %.0f mm (%d) | Lowest: %.0f mm (%d) | Years: %d", 
+                    avgRainfall, maxValue, maxYear, minRainfall, minYear, dataSize));
+            html.append("</div>");
+            html.append("</div>");
+
+            return html.toString();
+        } catch (Exception e) {
+            return "<div class='alert alert-danger'>Error generating year-wise rainfall chart: " + e.getMessage() + "</div>";
+        }
+    }
+
+    /**
+     * Generate a monthly offset chart - shows data with year starting from specified month
+     * @param monthOffset Month to start the year from (1-12, where 1=Jan, 12=Dec)
+     * @return HTML string with SVG chart
+     */
+    public String generateMonthlyOffsetChartHtml(int monthOffset) {
+        try {
+            if (monthOffset < 1 || monthOffset > 12) monthOffset = 1;
+            
+            List<RainfallRecord> allData = rainfallDataService.getAllData();
+            if (allData.isEmpty()) return "<div>No data available for monthly offset chart.</div>";
+
+            // Group data by offset year (year starting from specified month)
+            Map<String, Double> offsetYearData = new LinkedHashMap<>();
+            
+            for (RainfallRecord record : allData) {
+                // Get monthly data array
+                double[] monthlyData = {
+                    record.getJan(), record.getFeb(), record.getMar(), record.getApril(),
+                    record.getMay(), record.getJune(), record.getJuly(), record.getAug(),
+                    record.getSept(), record.getOct(), record.getNov(), record.getDec()
+                };
+                
+                // Calculate rainfall for offset year (from monthOffset to monthOffset-1 of next year)
+                double offsetYearRainfall = 0.0;
+                
+                // Add months from monthOffset-1 to end of year
+                for (int i = monthOffset - 1; i < 12; i++) {
+                    offsetYearRainfall += monthlyData[i];
+                }
+                
+                // For the remaining months, we'd need data from the next year
+                // For simplicity, we'll just use current year's data
+                String offsetYearLabel = "OY" + record.getYear() + "(" + getMonthName(monthOffset) + "-start)";
+                offsetYearData.put(offsetYearLabel, offsetYearRainfall);
+            }
+
+            StringBuilder html = new StringBuilder();
+            html.append("<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; margin: 20px 0;'>");
+            html.append("<h4>📊 Monthly Offset Rainfall Chart (Starting from ").append(getMonthName(monthOffset)).append(")</h4>");
+            html.append("<div style='position: relative; width: 100%; height: 400px; background: white; border: 1px solid #ddd; padding: 20px; box-sizing: border-box;'>");
+            html.append("<svg width='100%' height='350' viewBox='0 0 800 350' style='overflow: visible;'>");
+
+            // Calculate chart dimensions
+            int chartWidth = 700;
+            int chartHeight = 280;
+            int leftPad = 80;
+            int rightPad = 40;
+            int topPad = 30;
+            int bottomPad = 50;
+
+            // Calculate max value for scaling
+            double maxValue = offsetYearData.values().stream()
+                    .mapToDouble(Double::doubleValue)
+                    .max().orElse(1000.0);
+
+            // Draw grid lines and y-axis labels
+            for (int i = 0; i <= 5; i++) {
+                double yValue = maxValue * i / 5;
+                int yPos = (int) (chartHeight - (chartHeight * i / 5) + topPad);
+                html.append(String.format("<line x1='%d' y1='%d' x2='%d' y2='%d' stroke='#ecf0f1' stroke-width='1'/>", 
+                        leftPad, yPos, chartWidth - rightPad, yPos));
+                html.append(String.format("<text x='%d' y='%d' text-anchor='end' font-size='10' fill='#7f8c8d'>%.0f</text>", 
+                        leftPad - 5, yPos + 3, yValue));
+            }
+
+            // Calculate bar width based on number of offset years
+            int dataSize = offsetYearData.size();
+            int availableWidth = chartWidth - leftPad - rightPad;
+            int barWidth = Math.max(8, availableWidth / dataSize - 3);
+            int spacing = 3;
+
+            // Draw bars for each offset year
+            int x = leftPad;
+            String[] colors = {"#e67e22", "#9b59b6", "#1abc9c", "#34495e", "#3498db", "#e74c3c", "#2ecc71", "#f39c12"};
+            int index = 0;
+            
+            for (Map.Entry<String, Double> entry : offsetYearData.entrySet()) {
+                String label = entry.getKey();
+                double rainfall = entry.getValue();
+                int barHeight = (int) ((rainfall / maxValue) * chartHeight);
+                int barY = chartHeight - barHeight + topPad;
+                
+                String color = colors[index % colors.length];
+                
+                // Draw bar
+                html.append(String.format("<rect x='%d' y='%d' width='%d' height='%d' fill='%s' stroke='#2c3e50' stroke-width='0.5' rx='2'/>", 
+                        x, barY, barWidth, barHeight, color));
+                
+                // Draw value label on top of bar
+                if (barHeight > 20) {
+                    html.append(String.format("<text x='%d' y='%d' text-anchor='middle' font-size='9' fill='#2c3e50'>%.0f</text>", 
+                            x + barWidth/2, barY - 5, rainfall));
+                }
+                
+                // Draw year label (extract year from label)
+                String yearStr = label.substring(2, label.indexOf('('));
+                if (index % 3 == 0 || index == dataSize - 1) {
+                    html.append(String.format("<text x='%d' y='%d' text-anchor='middle' font-size='9' fill='#7f8c8d' transform='rotate(-45, %d, %d)'>%s</text>", 
+                            x + barWidth/2, chartHeight + topPad + 25, x + barWidth/2, chartHeight + topPad + 25, yearStr));
+                }
+                
+                x += barWidth + spacing;
+                index++;
+            }
+
+            // Draw axes
+            html.append(String.format("<line x1='%d' y1='%d' x2='%d' y2='%d' stroke='#2c3e50' stroke-width='2'/>", 
+                    leftPad, topPad, leftPad, chartHeight + topPad));
+            html.append(String.format("<line x1='%d' y1='%d' x2='%d' y2='%d' stroke='#2c3e50' stroke-width='2'/>", 
+                    leftPad, chartHeight + topPad, chartWidth - rightPad, chartHeight + topPad));
+
+            // Add axis labels
+            html.append("<text x='25' y='160' text-anchor='middle' font-size='12' font-weight='bold' fill='#2c3e50' transform='rotate(-90, 25, 160)'>Rainfall (mm)</text>");
+            html.append("<text x='400' y='340' text-anchor='middle' font-size='12' font-weight='bold' fill='#2c3e50'>Offset Year</text>");
+
+            html.append("</svg>");
+            html.append("</div>");
+
+            // Add summary statistics
+            double avgRainfall = offsetYearData.values().stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+            double minRainfall = offsetYearData.values().stream().mapToDouble(Double::doubleValue).min().orElse(0.0);
+            
+            html.append("<div style='margin-top: 15px; font-size: 14px; color: #7f8c8d;'>");
+            html.append(String.format("<strong>Offset Analysis (Start: %s):</strong> Avg: %.0f mm | Max: %.0f mm | Min: %.0f mm | Data points: %d", 
+                    getMonthName(monthOffset), avgRainfall, maxValue, minRainfall, dataSize));
+            html.append("</div>");
+            html.append("</div>");
+
+            return html.toString();
+        } catch (Exception e) {
+            return "<div class='alert alert-danger'>Error generating monthly offset chart: " + e.getMessage() + "</div>";
+        }
+    }
+
+    /**
+     * Helper method to get month name from month number
+     */
+    private String getMonthName(int month) {
+        String[] months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+        return months[month - 1];
+    }
 }

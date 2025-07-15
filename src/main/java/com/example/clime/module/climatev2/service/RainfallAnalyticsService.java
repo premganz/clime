@@ -18,6 +18,11 @@ public class RainfallAnalyticsService {
     // Thread-local variable to track excluded years for this request
     private ThreadLocal<String> excludedYears = new ThreadLocal<>();
     
+    // Thread-local variables for year filtering
+    private ThreadLocal<Integer> yearFilter = new ThreadLocal<>();
+    private ThreadLocal<Integer> startYearFilter = new ThreadLocal<>();
+    private ThreadLocal<Integer> endYearFilter = new ThreadLocal<>();
+    
     public void setExcludedYears(String excludedYears) {
         this.excludedYears.set(excludedYears);
     }
@@ -29,6 +34,60 @@ public class RainfallAnalyticsService {
     public void clearExcludedYears() {
         this.excludedYears.remove();
     }
+    
+    public void setYearFilter(Integer year) {
+        this.yearFilter.set(year);
+    }
+    
+    public void setYearRangeFilter(Integer startYear, Integer endYear) {
+        this.startYearFilter.set(startYear);
+        this.endYearFilter.set(endYear);
+    }
+    
+    public void clearYearFilters() {
+        this.yearFilter.remove();
+        this.startYearFilter.remove();
+        this.endYearFilter.remove();
+    }
+    
+    private List<RainfallRecord> getFilteredData() {
+        try {
+            String excludedYearsStr = getExcludedYears();
+            Integer year = this.yearFilter.get();
+            Integer startYear = this.startYearFilter.get();
+            Integer endYear = this.endYearFilter.get();
+            
+            List<RainfallRecord> data;
+            
+            if (year != null) {
+                // Single year filter
+                if (excludedYearsStr != null && !excludedYearsStr.trim().isEmpty()) {
+                    data = rainfallDataService.getDataByYear(year, excludedYearsStr);
+                } else {
+                    data = rainfallDataService.getDataByYear(year);
+                }
+            } else if (startYear != null && endYear != null) {
+                // Year range filter
+                if (excludedYearsStr != null && !excludedYearsStr.trim().isEmpty()) {
+                    data = rainfallDataService.getDataByYearRange(startYear, endYear, excludedYearsStr);
+                } else {
+                    data = rainfallDataService.getDataByYearRange(startYear, endYear);
+                }
+            } else {
+                // No year filter, get all data
+                if (excludedYearsStr != null && !excludedYearsStr.trim().isEmpty()) {
+                    data = rainfallDataService.getAllData(excludedYearsStr);
+                } else {
+                    data = rainfallDataService.getAllData();
+                }
+            }
+            
+            return data;
+        } catch (Exception e) {
+            // Return empty list on error
+            return new ArrayList<>();
+        }
+    }
 
     /**
      * Generate a yearly rainfall line graph as SVG (no JS, fits analytics dashboard).
@@ -36,14 +95,7 @@ public class RainfallAnalyticsService {
      */
     public String generateYearlyRainfallLineChartHtml() {
         try {
-            List<RainfallRecord> allData;
-            String excludedYearsStr = getExcludedYears();
-            
-            if (excludedYearsStr != null && !excludedYearsStr.trim().isEmpty()) {
-                allData = rainfallDataService.getAllData(excludedYearsStr);
-            } else {
-                allData = rainfallDataService.getAllData();
-            }
+            List<RainfallRecord> allData = getFilteredData();
             
             if (allData.isEmpty()) return "<div>No data available.</div>";
 
@@ -63,9 +115,20 @@ public class RainfallAnalyticsService {
 
         StringBuilder html = new StringBuilder();
         
-        // Add excluded years info if applicable
+        // Add filtering info if applicable
+        String excludedYearsStr = getExcludedYears();
+        Integer filterYear = this.yearFilter.get();
+        Integer filterStartYear = this.startYearFilter.get();
+        Integer filterEndYear = this.endYearFilter.get();
+        
         if (excludedYearsStr != null && !excludedYearsStr.trim().isEmpty()) {
             html.append(rainfallDataService.getExcludedYearsInfo(excludedYearsStr));
+        }
+        
+        if (filterYear != null) {
+            html.append("<div class='alert alert-info'>📅 <strong>Year Filter:</strong> Showing data for year " + filterYear + "</div>");
+        } else if (filterStartYear != null && filterEndYear != null) {
+            html.append("<div class='alert alert-info'>📅 <strong>Date Range Filter:</strong> Showing data from " + filterStartYear + " to " + filterEndYear + "</div>");
         }
         
         html.append("<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; margin: 20px 0;'>");
@@ -1333,7 +1396,7 @@ public class RainfallAnalyticsService {
      */
     public String generateBundleComparisonChartHtmlWithOffset(int offset, int bundleSize) {
         try {
-            List<RainfallRecord> allData = rainfallDataService.getAllData();
+            List<RainfallRecord> allData = getFilteredData();
             if (bundleSize <= 0) bundleSize = 10; // Default to decade
             
             // Validate offset constraint: offset must be strictly less than bundleSize
@@ -1370,6 +1433,23 @@ public class RainfallAnalyticsService {
             }
 
             StringBuilder html = new StringBuilder();
+            
+            // Add filtering info if applicable
+            String excludedYearsStr = getExcludedYears();
+            Integer filterYear = this.yearFilter.get();
+            Integer filterStartYear = this.startYearFilter.get();
+            Integer filterEndYear = this.endYearFilter.get();
+            
+            if (excludedYearsStr != null && !excludedYearsStr.trim().isEmpty()) {
+                html.append(rainfallDataService.getExcludedYearsInfo(excludedYearsStr));
+            }
+            
+            if (filterYear != null) {
+                html.append("<div class='alert alert-info'>📅 <strong>Year Filter:</strong> Showing data for year " + filterYear + "</div>");
+            } else if (filterStartYear != null && filterEndYear != null) {
+                html.append("<div class='alert alert-info'>📅 <strong>Date Range Filter:</strong> Showing data from " + filterStartYear + " to " + filterEndYear + "</div>");
+            }
+            
             html.append("<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; margin: 20px 0;'>");
             html.append("<h4>📊 ").append(bundleSize).append("-Year Bundle Rainfall Comparison (Offset: ").append(offset).append(")</h4>");
             html.append("<div style='position: relative; width: 100%; height: 400px; background: white; border: 1px solid #ddd; padding: 20px; box-sizing: border-box;'>");

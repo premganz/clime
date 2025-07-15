@@ -124,10 +124,13 @@ public class RainfallControllerV2 {
 
     @GetMapping("/charts/annual")
     public ResponseEntity<String> getAnnualChart(@RequestParam(defaultValue = "CSV") String dataSource,
-                                                @RequestParam(required = false) String excludedYears) {
+                                                @RequestParam(required = false) String excludedYears,
+                                                @RequestParam(required = false) Integer year,
+                                                @RequestParam(required = false) Integer startYear,
+                                                @RequestParam(required = false) Integer endYear) {
         try {
             // Set data source temporarily and excluded years
-            return getChartResponse(dataSource, excludedYears, () -> rainfallAnalyticsService.generateYearlyRainfallLineChartHtml(), "annual chart");
+            return getChartResponse(dataSource, excludedYears, year, startYear, endYear, () -> rainfallAnalyticsService.generateYearlyRainfallLineChartHtml(), "annual chart");
         } catch (Exception e) {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating annual chart: " + e.getMessage() + "</div>");
         }
@@ -135,9 +138,12 @@ public class RainfallControllerV2 {
 
     @GetMapping("/charts/yearly-svg")
     public ResponseEntity<String> getYearlySvgChart(@RequestParam(defaultValue = "CSV") String dataSource,
-                                                   @RequestParam(required = false) String excludedYears) {
+                                                   @RequestParam(required = false) String excludedYears,
+                                                   @RequestParam(required = false) Integer year,
+                                                   @RequestParam(required = false) Integer startYear,
+                                                   @RequestParam(required = false) Integer endYear) {
         try {
-            return getChartResponse(dataSource, excludedYears, () -> rainfallAnalyticsService.generateYearlyRainfallLineChartHtml(), "yearly SVG chart");
+            return getChartResponse(dataSource, excludedYears, year, startYear, endYear, () -> rainfallAnalyticsService.generateYearlyRainfallLineChartHtml(), "yearly SVG chart");
         } catch (Exception e) {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating yearly SVG chart: " + e.getMessage() + "</div>");
         }
@@ -145,9 +151,12 @@ public class RainfallControllerV2 {
 
     @GetMapping("/charts/monthly")
     public ResponseEntity<String> getMonthlyChart(@RequestParam(defaultValue = "CSV") String dataSource,
-                                                 @RequestParam(required = false) String excludedYears) {
+                                                 @RequestParam(required = false) String excludedYears,
+                                                 @RequestParam(required = false) Integer year,
+                                                 @RequestParam(required = false) Integer startYear,
+                                                 @RequestParam(required = false) Integer endYear) {
         try {
-            return getChartResponse(dataSource, excludedYears, () -> {
+            return getChartResponse(dataSource, excludedYears, year, startYear, endYear, () -> {
                 StringBuilder html = new StringBuilder();
                 html.append("<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>");
                 html.append(rainfallAnalyticsService.generateMonthlyAverageChartHtml());
@@ -162,9 +171,12 @@ public class RainfallControllerV2 {
     public ResponseEntity<String> getDecadeOffsetChart(@RequestParam(defaultValue = "0") int offset, 
                                                       @RequestParam(defaultValue = "10") int bundleSize, 
                                                       @RequestParam(defaultValue = "CSV") String dataSource,
-                                                      @RequestParam(required = false) String excludedYears) {
+                                                      @RequestParam(required = false) String excludedYears,
+                                                      @RequestParam(required = false) Integer year,
+                                                      @RequestParam(required = false) Integer startYear,
+                                                      @RequestParam(required = false) Integer endYear) {
         try {
-            return getChartResponse(dataSource, excludedYears, () -> rainfallAnalyticsService.generateBundleComparisonChartHtmlWithOffset(offset, bundleSize), "bundled chart with offset");
+            return getChartResponse(dataSource, excludedYears, year, startYear, endYear, () -> rainfallAnalyticsService.generateBundleComparisonChartHtmlWithOffset(offset, bundleSize), "bundled chart with offset");
         } catch (Exception e) {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating bundled chart with offset: " + e.getMessage() + "</div>");
         }
@@ -173,9 +185,12 @@ public class RainfallControllerV2 {
     @GetMapping("/charts/monthly-trend")
     public ResponseEntity<String> getMonthlyTrendChart(@RequestParam int month, 
                                                       @RequestParam(defaultValue = "CSV") String dataSource,
-                                                      @RequestParam(required = false) String excludedYears) {
+                                                      @RequestParam(required = false) String excludedYears,
+                                                      @RequestParam(required = false) Integer year,
+                                                      @RequestParam(required = false) Integer startYear,
+                                                      @RequestParam(required = false) Integer endYear) {
         try {
-            return getChartResponse(dataSource, excludedYears, () -> rainfallAnalyticsService.generateMonthlyTrendLineChartHtml(month), "monthly trend chart");
+            return getChartResponse(dataSource, excludedYears, year, startYear, endYear, () -> rainfallAnalyticsService.generateMonthlyTrendLineChartHtml(month), "monthly trend chart");
         } catch (Exception e) {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating monthly trend chart: " + e.getMessage() + "</div>");
         }
@@ -183,9 +198,12 @@ public class RainfallControllerV2 {
 
     @GetMapping("/charts/year-wise")
     public ResponseEntity<String> getYearWiseChart(@RequestParam(defaultValue = "CSV") String dataSource,
-                                                  @RequestParam(required = false) String excludedYears) {
+                                                  @RequestParam(required = false) String excludedYears,
+                                                  @RequestParam(required = false) Integer year,
+                                                  @RequestParam(required = false) Integer startYear,
+                                                  @RequestParam(required = false) Integer endYear) {
         try {
-            return getChartResponse(dataSource, excludedYears, () -> rainfallAnalyticsService.generateYearWiseRainfallChartHtml(), "year-wise chart");
+            return getChartResponse(dataSource, excludedYears, year, startYear, endYear, () -> rainfallAnalyticsService.generateYearWiseRainfallChartHtml(), "year-wise chart");
         } catch (Exception e) {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating year-wise chart: " + e.getMessage() + "</div>");
         }
@@ -194,9 +212,12 @@ public class RainfallControllerV2 {
     @GetMapping("/charts/monthly-offset")
     public ResponseEntity<String> getMonthlyOffsetChart(@RequestParam(defaultValue = "1") int monthOffset, 
                                                        @RequestParam(defaultValue = "CSV") String dataSource,
-                                                       @RequestParam(required = false) String excludedYears) {
+                                                       @RequestParam(required = false) String excludedYears,
+                                                       @RequestParam(required = false) Integer year,
+                                                       @RequestParam(required = false) Integer startYear,
+                                                       @RequestParam(required = false) Integer endYear) {
         try {
-            return getChartResponse(dataSource, excludedYears, () -> rainfallAnalyticsService.generateMonthlyOffsetChartHtml(monthOffset), "monthly offset chart");
+            return getChartResponse(dataSource, excludedYears, year, startYear, endYear, () -> rainfallAnalyticsService.generateMonthlyOffsetChartHtml(monthOffset), "monthly offset chart");
         } catch (Exception e) {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating monthly offset chart: " + e.getMessage() + "</div>");
         }
@@ -205,9 +226,12 @@ public class RainfallControllerV2 {
     @GetMapping("/charts/yearly-monthly-offset")
     public ResponseEntity<String> getYearlyChartWithMonthlyOffset(@RequestParam(defaultValue = "1") int offset, 
                                                                  @RequestParam(defaultValue = "CSV") String dataSource,
-                                                                 @RequestParam(required = false) String excludedYears) {
+                                                                 @RequestParam(required = false) String excludedYears,
+                                                                 @RequestParam(required = false) Integer year,
+                                                                 @RequestParam(required = false) Integer startYear,
+                                                                 @RequestParam(required = false) Integer endYear) {
         try {
-            return getChartResponse(dataSource, excludedYears, () -> rainfallAnalyticsService.generateYearlyBarChartWithMonthlyOffset(offset), "yearly chart with monthly offset");
+            return getChartResponse(dataSource, excludedYears, year, startYear, endYear, () -> rainfallAnalyticsService.generateYearlyBarChartWithMonthlyOffset(offset), "yearly chart with monthly offset");
         } catch (Exception e) {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating yearly chart with monthly offset: " + e.getMessage() + "</div>");
         }
@@ -250,6 +274,41 @@ public class RainfallControllerV2 {
             return ResponseEntity.ok("<div class='alert alert-danger'>Invalid data source: " + dataSource + "</div>");
         } catch (Exception e) {
             rainfallAnalyticsService.clearExcludedYears();
+            return ResponseEntity.ok("<div class='alert alert-danger'>Error generating " + chartType + ": " + e.getMessage() + "</div>");
+        }
+    }
+    
+    private ResponseEntity<String> getChartResponse(String dataSource, String excludedYears, Integer year, Integer startYear, Integer endYear, Supplier<String> chartGenerator, String chartType) {
+        // Set the data source in the unified service and excluded years in analytics service
+        try {
+            DataSource ds = DataSource.valueOf(dataSource.toUpperCase());
+            unifiedRainfallDataService.setDataSource(ds);
+            
+            // Set excluded years for this request
+            rainfallAnalyticsService.setExcludedYears(excludedYears);
+            
+            // Set date range filtering in analytics service if parameters are provided
+            if (year != null) {
+                rainfallAnalyticsService.setYearFilter(year);
+            } else if (startYear != null && endYear != null) {
+                rainfallAnalyticsService.setYearRangeFilter(startYear, endYear);
+            }
+            
+            // Generate chart using the analytics service (now works with both CSV and KWS data)
+            String html = chartGenerator.get();
+            
+            // Clear filters after use
+            rainfallAnalyticsService.clearExcludedYears();
+            rainfallAnalyticsService.clearYearFilters();
+            
+            return ResponseEntity.ok(html);
+        } catch (IllegalArgumentException e) {
+            rainfallAnalyticsService.clearExcludedYears();
+            rainfallAnalyticsService.clearYearFilters();
+            return ResponseEntity.ok("<div class='alert alert-danger'>Invalid data source: " + dataSource + "</div>");
+        } catch (Exception e) {
+            rainfallAnalyticsService.clearExcludedYears();
+            rainfallAnalyticsService.clearYearFilters();
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating " + chartType + ": " + e.getMessage() + "</div>");
         }
     }

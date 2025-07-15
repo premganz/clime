@@ -21,7 +21,7 @@ public class YearFilteringTest {
     @Test
     public void testAnnualChartWithExcludedYears() {
         // Test annual chart with excluded years
-        ResponseEntity<String> response = rainfallControllerV2.getAnnualChart("CSV", "1940,1965,2015");
+        ResponseEntity<String> response = rainfallControllerV2.getAnnualChart("CSV", "1940,1965,2015", null, null, null);
         assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody());
         
@@ -33,7 +33,7 @@ public class YearFilteringTest {
     @Test
     public void testMonthlyChartWithExcludedYears() {
         // Test monthly chart with excluded years
-        ResponseEntity<String> response = rainfallControllerV2.getMonthlyChart("CSV", "1940,1965");
+        ResponseEntity<String> response = rainfallControllerV2.getMonthlyChart("CSV", "1940,1965", null, null, null);
         assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody());
         
@@ -44,7 +44,7 @@ public class YearFilteringTest {
     @Test
     public void testBundledChartWithExcludedYears() {
         // Test bundled chart with excluded years
-        ResponseEntity<String> response = rainfallControllerV2.getDecadeOffsetChart(0, 10, "CSV", "1940,1965,2015");
+        ResponseEntity<String> response = rainfallControllerV2.getDecadeOffsetChart(0, 10, "CSV", "1940,1965,2015", null, null, null);
         assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody());
         
@@ -57,7 +57,7 @@ public class YearFilteringTest {
     @Test
     public void testYearWiseChartWithExcludedYears() {
         // Test year-wise chart with excluded years
-        ResponseEntity<String> response = rainfallControllerV2.getYearWiseChart("CSV", "1940,1965");
+        ResponseEntity<String> response = rainfallControllerV2.getYearWiseChart("CSV", "1940,1965", null, null, null);
         assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody());
         
@@ -68,7 +68,7 @@ public class YearFilteringTest {
     @Test
     public void testInvalidExcludedYearsFormat() {
         // Test with invalid excluded years format
-        ResponseEntity<String> response = rainfallControllerV2.getAnnualChart("CSV", "abc,xyz,123.5");
+        ResponseEntity<String> response = rainfallControllerV2.getAnnualChart("CSV", "abc,xyz,123.5", null, null, null);
         assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody());
         
@@ -79,7 +79,7 @@ public class YearFilteringTest {
     @Test
     public void testEmptyExcludedYears() {
         // Test with empty excluded years
-        ResponseEntity<String> response = rainfallControllerV2.getAnnualChart("CSV", "");
+        ResponseEntity<String> response = rainfallControllerV2.getAnnualChart("CSV", "", null, null, null);
         assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody());
         
@@ -90,7 +90,7 @@ public class YearFilteringTest {
     @Test
     public void testNullExcludedYears() {
         // Test with null excluded years
-        ResponseEntity<String> response = rainfallControllerV2.getAnnualChart("CSV", null);
+        ResponseEntity<String> response = rainfallControllerV2.getAnnualChart("CSV", null, null, null, null);
         assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody());
         

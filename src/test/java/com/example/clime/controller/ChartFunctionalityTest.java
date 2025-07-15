@@ -57,26 +57,30 @@ public class ChartFunctionalityTest {
     }
 
     @Test
-    public void testDecadeChart() {
-        // Test decade chart with KWS data and default bundle size
-        ResponseEntity<String> response = rainfallControllerV2.getDecadeChart(10, "KWS");
+    public void testBundledChartWithZeroOffset() {
+        // Test bundled chart with zero offset - this replaces the removed decade chart functionality
+        ResponseEntity<String> response = rainfallControllerV2.getDecadeOffsetChart(0, 10, "KWS");
         assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody());
         
         // Should not contain the restriction message
         assertFalse(response.getBody().contains("Chart not available for KWS data"));
+        
+        // Should contain chart content with offset 0 (equivalent to old bundled chart)
+        assertTrue(response.getBody().contains("(Offset: 0)"), "Should contain offset in title");
+        assertTrue(response.getBody().contains("Bundle Size:</strong> 10 years"), "Should contain bundle size in summary");
     }
 
     @Test
     public void testBundledChartFunctionality() {
-        // Test bundled chart with different bundle sizes
-        ResponseEntity<String> response5Years = rainfallControllerV2.getDecadeChart(5, "CSV");
+        // Test bundled chart with different bundle sizes using offset 0 (replaces old bundled chart)
+        ResponseEntity<String> response5Years = rainfallControllerV2.getDecadeOffsetChart(0, 5, "CSV");
         assertEquals(200, response5Years.getStatusCodeValue());
         assertNotNull(response5Years.getBody());
         assertTrue(response5Years.getBody().contains("5-Year Bundle"), "Should contain bundle size in title");
         assertTrue(response5Years.getBody().contains("Bundle Size:</strong> 5 years"), "Should contain bundle size in summary");
         
-        ResponseEntity<String> response10Years = rainfallControllerV2.getDecadeChart(10, "CSV");
+        ResponseEntity<String> response10Years = rainfallControllerV2.getDecadeOffsetChart(0, 10, "CSV");
         assertEquals(200, response10Years.getStatusCodeValue());
         assertNotNull(response10Years.getBody());
         assertTrue(response10Years.getBody().contains("10-Year Bundle"), "Should contain bundle size in title");

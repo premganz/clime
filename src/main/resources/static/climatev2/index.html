@@ -49,11 +49,11 @@
         
         <!-- Main Content -->
         <div class="row g-4">
-            <!-- Left Column - Data Controls -->
-            <div class="col-lg-4 col-md-6">
+            <!-- Left Column - Master Settings -->
+            <div class="col-lg-6 col-md-12">
                 <div class="card h-100">
                     <div class="card-header">
-                        <h5 class="card-title mb-0">📊 Data Controls</h5>
+                        <h5 class="card-title mb-0">⚙️ Master Settings</h5>
                     </div>
                     <div class="card-body">
                         <div id="message" class="alert alert-info d-none"></div>
@@ -78,15 +78,16 @@
                             </div>
                         </div>
                         
+                        <!-- Year Selection -->
                         <div class="mb-3">
-                            <label for="year" class="form-label">Specific Year:</label>
+                            <label for="year" class="form-label">📅 Specific Year:</label>
                             <select id="year" class="form-select">
                                 <option value="">All Years (Last 20)</option>
                             </select>
                         </div>
                         
                         <div class="mb-3">
-                            <label class="form-label">Year Range:</label>
+                            <label class="form-label">📅 Year Range:</label>
                             <div class="row">
                                 <div class="col-6">
                                     <input type="number" id="startYear" class="form-control" placeholder="Start Year" min="1901" max="2021">
@@ -113,8 +114,8 @@
                 </div>
             </div>
             
-            <!-- Center Column - Chart Controls -->
-            <div class="col-lg-4 col-md-6">
+            <!-- Right Column - Chart Options -->
+            <div class="col-lg-6 col-md-12">
                 <div class="card h-100">
                     <div class="card-header">
                         <h5 class="card-title mb-0">📈 Chart Options</h5>
@@ -145,14 +146,11 @@
                                 <button id="monthlyTrendChartButton" class="btn btn-outline-warning">📈 Monthly Trend</button>
                             </div>
                             <div class="input-group mb-2">
-                                <span class="input-group-text">Bundle Size</span>
-                                <input type="number" id="bundleSizeInput" class="form-control" min="1" max="50" value="10" style="max-width:70px;" onchange="updateOffsetMax()">
-                                <button id="decadeChartButton" class="btn btn-outline-info">📆 Bundled Chart</button>
-                            </div>
-                            <div class="input-group mb-2">
                                 <span class="input-group-text">Bundle Offset</span>
                                 <input type="number" id="decadeOffsetInput" class="form-control" min="0" max="9" value="0" style="max-width:70px;">
-                                <button id="decadeOffsetChartButton" class="btn btn-outline-info">📆 Bundled Chart (Offset)</button>
+                                <span class="input-group-text">Size</span>
+                                <input type="number" id="bundleSizeInput" class="form-control" min="1" max="50" value="10" style="max-width:70px;" onchange="updateOffsetMax()">
+                                <button id="decadeOffsetChartButton" class="btn btn-outline-info">📆 Bundled Chart</button>
                             </div>
                             <div class="input-group mb-2">
                                 <span class="input-group-text">Monthly Offset</span>
@@ -175,23 +173,6 @@
                             <button id="yearWiseChartButton" class="btn btn-outline-primary">📊 Year-wise Chart</button>
                             <button id="chennaiRainfallButton" class="btn btn-outline-success mt-2">🌧️ Chennai Rainfall Trend</button>
                             <button id="kwsRainfallAnalyticsButton" class="btn btn-outline-primary mt-2">🌐 KWS Rainfall Analytics</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Right Column - Quick Actions -->
-            <div class="col-lg-4 col-md-12">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">⚡ Quick Actions</h5>
-                    </div>
-                    <div class="card-body">
-                        <p class="card-text">Quick access to common queries:</p>
-                        <div class="d-grid gap-2">
-                            <button id="recentYearsButton" class="btn btn-outline-warning">Last 10 Years</button>
-                            <button id="centuryViewButton" class="btn btn-outline-danger">20th Century View</button>
-                            <button id="modernEraButton" class="btn btn-outline-success">21st Century</button>
                         </div>
                     </div>
                 </div>
@@ -542,27 +523,6 @@
                 };
             }
             
-            var decadeChartBtn = document.getElementById('decadeChartButton');
-            if (decadeChartBtn) {
-                decadeChartBtn.onclick = function() {
-                    var bundleSize = document.getElementById('bundleSizeInput').value || 10;
-                    var dataSource = getCurrentDataSource();
-                    showMessage('🔄 Generating bundled chart...', 'blue');
-                    fetch('/api/rainfallv2/charts/decade?bundleSize=' + bundleSize + '&dataSource=' + dataSource)
-                        .then(function(response) { return response.text(); })
-                        .then(function(data) {
-                            var dataElement = document.getElementById('rainfallData');
-                            if (dataElement) {
-                                dataElement.innerHTML = data;
-                            }
-                            showMessage('✅ Bundled chart generated!', 'green');
-                        })
-                        .catch(function(error) {
-                            showMessage('❌ Error: ' + error.message, 'red');
-                        });
-                };
-            }
-            
             // Chennai Rainfall Trend button
             var chennaiRainfallBtn = document.getElementById('chennaiRainfallButton');
             if (chennaiRainfallBtn) {
@@ -580,34 +540,6 @@
                         .catch(function(error) {
                             showMessage('❌ Error: ' + error.message, 'red');
                         });
-                };
-            }
-            
-            // Quick action buttons
-            var recentYearsBtn = document.getElementById('recentYearsButton');
-            if (recentYearsBtn) {
-                recentYearsBtn.onclick = function() {
-                    document.getElementById('startYear').value = '2012';
-                    document.getElementById('endYear').value = '2021';
-                    document.getElementById('fetchDataButton').click();
-                };
-            }
-            
-            var centuryViewBtn = document.getElementById('centuryViewButton');
-            if (centuryViewBtn) {
-                centuryViewBtn.onclick = function() {
-                    document.getElementById('startYear').value = '1901';
-                    document.getElementById('endYear').value = '2000';
-                    document.getElementById('fetchDataButton').click();
-                };
-            }
-            
-            var modernEraBtn = document.getElementById('modernEraButton');
-            if (modernEraBtn) {
-                modernEraBtn.onclick = function() {
-                    document.getElementById('startYear').value = '2001';
-                    document.getElementById('endYear').value = '2021';
-                    document.getElementById('fetchDataButton').click();
                 };
             }
             

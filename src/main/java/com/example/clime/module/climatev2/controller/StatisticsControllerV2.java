@@ -48,9 +48,12 @@ public class StatisticsControllerV2 {
     }
     
     @GetMapping("/rainy-days/summer/chart")
-    public ResponseEntity<String> getSummerRainyDaysChart(@RequestParam String key) {
+    public ResponseEntity<String> getSummerRainyDaysChart(@RequestParam String key,
+                                                         @RequestParam(required = false) Integer startYear,
+                                                         @RequestParam(required = false) Integer endYear,
+                                                         @RequestParam(required = false) String excludedYears) {
         try {
-            String chartHtml = statisticsService.generateSeasonalRainyDaysChart(key, "summer");
+            String chartHtml = statisticsService.generateSeasonalRainyDaysChart(key, "summer", startYear, endYear, excludedYears);
             return ResponseEntity.ok()
                 .header("Content-Type", "text/html; charset=UTF-8")
                 .body(chartHtml);
@@ -62,9 +65,12 @@ public class StatisticsControllerV2 {
     }
     
     @GetMapping("/rainy-days/winter/chart")
-    public ResponseEntity<String> getWinterRainyDaysChart(@RequestParam String key) {
+    public ResponseEntity<String> getWinterRainyDaysChart(@RequestParam String key,
+                                                         @RequestParam(required = false) Integer startYear,
+                                                         @RequestParam(required = false) Integer endYear,
+                                                         @RequestParam(required = false) String excludedYears) {
         try {
-            String chartHtml = statisticsService.generateSeasonalRainyDaysChart(key, "winter");
+            String chartHtml = statisticsService.generateSeasonalRainyDaysChart(key, "winter", startYear, endYear, excludedYears);
             return ResponseEntity.ok()
                 .header("Content-Type", "text/html; charset=UTF-8")
                 .body(chartHtml);

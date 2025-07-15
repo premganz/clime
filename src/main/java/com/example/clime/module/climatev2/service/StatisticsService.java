@@ -153,6 +153,10 @@ public class StatisticsService {
     }
     
     public String generateSeasonalRainyDaysChart(String providedKey, String season) {
+        return generateSeasonalRainyDaysChart(providedKey, season, null, null, null);
+    }
+    
+    public String generateSeasonalRainyDaysChart(String providedKey, String season, Integer startYear, Integer endYear, String excludedYears) {
         if (!unscrambleKey.equals(providedKey)) {
             throw new SecurityException("Invalid unscramble key");
         }
@@ -162,6 +166,9 @@ public class StatisticsService {
         
         // Define season months
         Set<Integer> seasonMonths = getSeasonMonths(season);
+        
+        // Parse excluded years
+        Set<Integer> excludedYearSet = parseExcludedYears(excludedYears);
         
         try {
             ClassPathResource resource = new ClassPathResource("scrambled_weather_data.csv");
@@ -176,6 +183,13 @@ public class StatisticsService {
                             int year = Integer.parseInt(line[1]);
                             int month = Integer.parseInt(line[2]);
                             String rainStr = line[11]; // rain column
+                            
+                            // Apply year range filtering
+                            if (startYear != null && year < startYear) continue;
+                            if (endYear != null && year > endYear) continue;
+                            
+                            // Apply excluded years filtering
+                            if (excludedYearSet.contains(year)) continue;
                             
                             // Only process if this month is in the requested season
                             if (seasonMonths.contains(month)) {
@@ -195,9 +209,27 @@ public class StatisticsService {
             throw new RuntimeException("Error reading weather data: " + e.getMessage());
         }
         
+        // Determine effective year range for display
+        int effectiveStartYear = startYear != null ? startYear : 2005;
+        int effectiveEndYear = endYear != null ? endYear : 2025;
+        
         // Generate chart HTML
         StringBuilder html = new StringBuilder();
         html.append("<div class='seasonal-chart'>");
+        
+        // Add filtering info
+        if (startYear != null || endYear != null || (excludedYears != null && !excludedYears.trim().isEmpty())) {
+            html.append("<div class='alert alert-info'>");
+            html.append("<strong>Filters Applied:</strong> ");
+            if (startYear != null || endYear != null) {
+                html.append("Year Range: ").append(effectiveStartYear).append("-").append(effectiveEndYear).append(" ");
+            }
+            if (excludedYears != null && !excludedYears.trim().isEmpty()) {
+                html.append("Excluded Years: ").append(excludedYears).append(" ");
+            }
+            html.append("</div>");
+        }
+        
         html.append("<h3>🌧️ ").append(capitalize(season)).append(" Rainy Days by Year - ClimateV2</h3>");
         html.append("<div class='chart-container'>");
         
@@ -206,7 +238,7 @@ public class StatisticsService {
         
         // Generate bar chart
         html.append("<div class='bar-chart'>");
-        for (int year = 2005; year <= 2025; year++) {
+        for (int year = effectiveStartYear; year <= effectiveEndYear; year++) {
             int rainyDays = seasonalRainyDays.getOrDefault(year, 0);
             int totalDays = seasonalTotalDays.getOrDefault(year, 0);
             
@@ -285,6 +317,22 @@ public class StatisticsService {
             default:
                 return "#6c757d"; // Gray
         }
+    }
+    
+    private Set<Integer> parseExcludedYears(String excludedYears) {
+        Set<Integer> excludedYearSet = new HashSet<>();
+        if (excludedYears != null && !excludedYears.trim().isEmpty()) {
+            String[] yearStrings = excludedYears.split(",");
+            for (String yearStr : yearStrings) {
+                try {
+                    int year = Integer.parseInt(yearStr.trim());
+                    excludedYearSet.add(year);
+                } catch (NumberFormatException e) {
+                    // Skip invalid year values
+                }
+            }
+        }
+        return excludedYearSet;
     }
     
     private String capitalize(String str) {

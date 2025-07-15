@@ -16,6 +16,34 @@ function getBaseUrl() {
     return '';
 }
 
+// Helper function to get year filter parameters from URL
+function getYearFilterParams() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return {
+        startYear: urlParams.get('startYear'),
+        endYear: urlParams.get('endYear'),
+        excludedYears: urlParams.get('excludedYears')
+    };
+}
+
+// Helper function to build URL with year filter parameters
+function buildSeasonalUrl(baseUrl, key, season) {
+    const yearParams = getYearFilterParams();
+    let url = `${baseUrl}/api/statistics/rainy-days/${season}/chart?key=${encodeURIComponent(key)}`;
+    
+    if (yearParams.startYear) {
+        url += `&startYear=${encodeURIComponent(yearParams.startYear)}`;
+    }
+    if (yearParams.endYear) {
+        url += `&endYear=${encodeURIComponent(yearParams.endYear)}`;
+    }
+    if (yearParams.excludedYears) {
+        url += `&excludedYears=${encodeURIComponent(yearParams.excludedYears)}`;
+    }
+    
+    return url;
+}
+
 function setupSeasonalAnalysis() {
     console.log('🚀 Setting up seasonal analysis...');
     
@@ -94,7 +122,7 @@ function showSummerRainyDays() {
     showSeasonalMessage('Loading summer rainy days statistics...');
     
     const baseUrl = getBaseUrl();
-    const url = `${baseUrl}/api/statistics/rainy-days/summer/chart?key=${encodeURIComponent(key)}`;
+    const url = buildSeasonalUrl(baseUrl, key, 'summer');
     console.log('🌐 Fetching summer data from URL:', url);
     
     fetch(url)
@@ -132,7 +160,7 @@ function showWinterRainyDays() {
     showSeasonalMessage('Loading winter rainy days statistics...');
     
     const baseUrl = getBaseUrl();
-    const url = `${baseUrl}/api/statistics/rainy-days/winter/chart?key=${encodeURIComponent(key)}`;
+    const url = buildSeasonalUrl(baseUrl, key, 'winter');
     console.log('🌐 Fetching winter data from URL:', url);
     
     fetch(url)
@@ -171,10 +199,10 @@ function showComparativeAnalysis() {
     
     const baseUrl = getBaseUrl();
     
-    // Fetch both summer and winter data
+    // Fetch both summer and winter data with year filtering
     Promise.all([
-        fetch(`${baseUrl}/api/statistics/rainy-days/summer/chart?key=${encodeURIComponent(key)}`),
-        fetch(`${baseUrl}/api/statistics/rainy-days/winter/chart?key=${encodeURIComponent(key)}`)
+        fetch(buildSeasonalUrl(baseUrl, key, 'summer')),
+        fetch(buildSeasonalUrl(baseUrl, key, 'winter'))
     ])
     .then(responses => {
         console.log('📊 Comparative analysis responses received');

@@ -22,7 +22,7 @@ public class ChartFunctionalityTest {
     @Test
     public void testCSVDataSourceCharts() {
         // Test CSV data source charts
-        ResponseEntity<String> response = rainfallControllerV2.getAnnualChart("CSV", null);
+        ResponseEntity<String> response = rainfallControllerV2.getAnnualChart("CSV", null, null, null, null);
         assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody());
         
@@ -37,7 +37,7 @@ public class ChartFunctionalityTest {
     @Test
     public void testKWSDataSourceCharts() {
         // Test KWS data source charts - this should now work!
-        ResponseEntity<String> response = rainfallControllerV2.getAnnualChart("KWS", null);
+        ResponseEntity<String> response = rainfallControllerV2.getAnnualChart("KWS", null, null, null, null);
         assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody());
         
@@ -59,7 +59,7 @@ public class ChartFunctionalityTest {
     @Test
     public void testBundledChartWithZeroOffset() {
         // Test bundled chart with zero offset - this replaces the removed decade chart functionality
-        ResponseEntity<String> response = rainfallControllerV2.getDecadeOffsetChart(0, 10, "KWS", null);
+        ResponseEntity<String> response = rainfallControllerV2.getDecadeOffsetChart(0, 10, "KWS", null, null, null, null);
         assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody());
         
@@ -74,13 +74,13 @@ public class ChartFunctionalityTest {
     @Test
     public void testBundledChartFunctionality() {
         // Test bundled chart with different bundle sizes using offset 0 (replaces old bundled chart)
-        ResponseEntity<String> response5Years = rainfallControllerV2.getDecadeOffsetChart(0, 5, "CSV", null);
+        ResponseEntity<String> response5Years = rainfallControllerV2.getDecadeOffsetChart(0, 5, "CSV", null, null, null, null);
         assertEquals(200, response5Years.getStatusCodeValue());
         assertNotNull(response5Years.getBody());
         assertTrue(response5Years.getBody().contains("5-Year Bundle"), "Should contain bundle size in title");
         assertTrue(response5Years.getBody().contains("Bundle Size:</strong> 5 years"), "Should contain bundle size in summary");
         
-        ResponseEntity<String> response10Years = rainfallControllerV2.getDecadeOffsetChart(0, 10, "CSV", null);
+        ResponseEntity<String> response10Years = rainfallControllerV2.getDecadeOffsetChart(0, 10, "CSV", null, null, null, null);
         assertEquals(200, response10Years.getStatusCodeValue());
         assertNotNull(response10Years.getBody());
         assertTrue(response10Years.getBody().contains("10-Year Bundle"), "Should contain bundle size in title");
@@ -90,7 +90,7 @@ public class ChartFunctionalityTest {
     @Test
     public void testBundledChartWithOffset() {
         // Test bundled chart with offset functionality
-        ResponseEntity<String> response = rainfallControllerV2.getDecadeOffsetChart(2, 5, "CSV", null);
+        ResponseEntity<String> response = rainfallControllerV2.getDecadeOffsetChart(2, 5, "CSV", null, null, null, null);
         assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody());
         assertTrue(response.getBody().contains("(Offset: 2)"), "Should contain offset in title");
@@ -101,7 +101,7 @@ public class ChartFunctionalityTest {
     @Test
     public void testMonthlyChart() {
         // Test monthly chart with KWS data
-        ResponseEntity<String> response = rainfallControllerV2.getMonthlyChart("KWS", null);
+        ResponseEntity<String> response = rainfallControllerV2.getMonthlyChart("KWS", null, null, null, null);
         assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody());
         
@@ -122,7 +122,7 @@ public class ChartFunctionalityTest {
     @Test
     public void testBundledChartWithInvalidOffset() {
         // Test bundled chart with invalid offset - should return error message
-        ResponseEntity<String> response = rainfallControllerV2.getDecadeOffsetChart(10, 5, "CSV", null);
+        ResponseEntity<String> response = rainfallControllerV2.getDecadeOffsetChart(10, 5, "CSV", null, null, null, null);
         assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody());
         
@@ -135,7 +135,7 @@ public class ChartFunctionalityTest {
     @Test
     public void testBundledChartWithNegativeOffset() {
         // Test bundled chart with negative offset - should return error message
-        ResponseEntity<String> response = rainfallControllerV2.getDecadeOffsetChart(-1, 5, "CSV", null);
+        ResponseEntity<String> response = rainfallControllerV2.getDecadeOffsetChart(-1, 5, "CSV", null, null, null, null);
         assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody());
         
@@ -148,7 +148,7 @@ public class ChartFunctionalityTest {
     @Test
     public void testBundledChartWithValidOffset() {
         // Test bundled chart with valid offset - should work normally
-        ResponseEntity<String> response = rainfallControllerV2.getDecadeOffsetChart(4, 5, "CSV", null);
+        ResponseEntity<String> response = rainfallControllerV2.getDecadeOffsetChart(4, 5, "CSV", null, null, null, null);
         assertEquals(200, response.getStatusCodeValue());
         assertNotNull(response.getBody());
         

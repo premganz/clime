@@ -264,10 +264,23 @@
                 var dataSource = getCurrentDataSource();
                 var excludedYears = getExcludedYears();
                 
+                // Get master date range settings
+                var year = document.getElementById('year') ? document.getElementById('year').value : '';
+                var startYear = document.getElementById('startYear') ? document.getElementById('startYear').value : '';
+                var endYear = document.getElementById('endYear') ? document.getElementById('endYear').value : '';
+                
                 var url = baseUrl + '?dataSource=' + dataSource;
                 
                 if (excludedYears) {
                     url += '&excludedYears=' + encodeURIComponent(excludedYears);
+                }
+                
+                // Add master date range settings
+                if (year) {
+                    url += '&year=' + encodeURIComponent(year);
+                } else if (startYear && endYear) {
+                    url += '&startYear=' + encodeURIComponent(startYear);
+                    url += '&endYear=' + encodeURIComponent(endYear);
                 }
                 
                 if (additionalParams) {

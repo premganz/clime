@@ -23,19 +23,30 @@ public class RainfallStatsControllerV2 {
     private UnifiedRainfallDataService unifiedRainfallDataService;
 
     @GetMapping("/summary")
-    public ResponseEntity<String> getRainfallSummary(@RequestParam(defaultValue = "CSV") String dataSource) {
+    public ResponseEntity<String> getRainfallSummary(@RequestParam(defaultValue = "CSV") String dataSource,
+                                                     @RequestParam(required = false) String excludedYears) {
         try {
             // Set data source for unified service
             setDataSourceIfValid(dataSource);
+            
+            // Set excluded years for analytics service
+            rainfallAnalyticsService.setExcludedYears(excludedYears);
+            
             String html = rainfallAnalyticsService.generateRainfallStatisticsHtml();
+            
+            // Clear excluded years after use
+            rainfallAnalyticsService.clearExcludedYears();
+            
             return ResponseEntity.ok(html);
         } catch (Exception e) {
+            rainfallAnalyticsService.clearExcludedYears();
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating rainfall summary: " + e.getMessage() + "</div>");
         }
     }
 
     @GetMapping("/charts/all")
-    public ResponseEntity<String> getAllCharts(@RequestParam(defaultValue = "CSV") String dataSource) {
+    public ResponseEntity<String> getAllCharts(@RequestParam(defaultValue = "CSV") String dataSource,
+                                              @RequestParam(required = false) String excludedYears) {
         try {
             // Store current data source to restore later
             DataSource originalSource = unifiedRainfallDataService.getCurrentDataSource();
@@ -43,12 +54,20 @@ public class RainfallStatsControllerV2 {
             // Set data source for unified service
             setDataSourceIfValid(dataSource);
             
+            // Set excluded years for analytics service
+            rainfallAnalyticsService.setExcludedYears(excludedYears);
+            
             StringBuilder html = new StringBuilder();
             html.append("<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>");
             html.append("<div class='container-fluid'>");
             
             // Add data source info
             html.append(unifiedRainfallDataService.getDataSourceInfo());
+            
+            // Add excluded years info if applicable
+            if (excludedYears != null && !excludedYears.trim().isEmpty()) {
+                html.append(unifiedRainfallDataService.getExcludedYearsInfo(excludedYears));
+            }
             
             // Check if this is CSV or KWS data and route accordingly
             if (unifiedRainfallDataService.getCurrentDataSource() == DataSource.KWS) {
@@ -58,7 +77,12 @@ public class RainfallStatsControllerV2 {
                 html.append("</div>");
                 
                 // Get KWS data table
-                List<RainfallRecord> kwsData = unifiedRainfallDataService.getAllData();
+                List<RainfallRecord> kwsData;
+                if (excludedYears != null && !excludedYears.trim().isEmpty()) {
+                    kwsData = unifiedRainfallDataService.getAllData(excludedYears);
+                } else {
+                    kwsData = unifiedRainfallDataService.getAllData();
+                }
                 String tableHtml = unifiedRainfallDataService.generateRainfallTableHtml(kwsData);
                 html.append(tableHtml);
                 
@@ -73,11 +97,15 @@ public class RainfallStatsControllerV2 {
             
             html.append("</div>");
             
+            // Clear excluded years after use
+            rainfallAnalyticsService.clearExcludedYears();
+            
             // Restore original data source
             unifiedRainfallDataService.setDataSource(originalSource);
             
             return ResponseEntity.ok(html.toString());
         } catch (Exception e) {
+            rainfallAnalyticsService.clearExcludedYears();
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating charts: " + e.getMessage() + "</div>");
         }
     }

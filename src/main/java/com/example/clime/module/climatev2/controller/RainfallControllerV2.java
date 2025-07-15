@@ -34,21 +34,35 @@ public class RainfallControllerV2 {
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Integer startYear,
             @RequestParam(required = false) Integer endYear,
+            @RequestParam(required = false) String excludedYears,
             @RequestParam(defaultValue = "html") String format) {
         
         try {
             List<RainfallRecord> data;
             
             if (year != null) {
-                data = rainfallDataService.getDataByYear(year);
+                if (excludedYears != null && !excludedYears.trim().isEmpty()) {
+                    data = unifiedRainfallDataService.getDataByYear(year, excludedYears);
+                } else {
+                    data = rainfallDataService.getDataByYear(year);
+                }
                 if (data.isEmpty()) {
                     return ResponseEntity.ok("<div class='alert alert-warning'>No rainfall data found for year " + year + "</div>");
                 }
             } else if (startYear != null && endYear != null) {
-                data = rainfallDataService.getDataByYearRange(startYear, endYear);
+                if (excludedYears != null && !excludedYears.trim().isEmpty()) {
+                    data = unifiedRainfallDataService.getDataByYearRange(startYear, endYear, excludedYears);
+                } else {
+                    data = rainfallDataService.getDataByYearRange(startYear, endYear);
+                }
             } else {
                 // Return last 20 years by default to avoid overwhelming display
-                List<RainfallRecord> allData = rainfallDataService.getAllData();
+                List<RainfallRecord> allData;
+                if (excludedYears != null && !excludedYears.trim().isEmpty()) {
+                    allData = unifiedRainfallDataService.getAllData(excludedYears);
+                } else {
+                    allData = rainfallDataService.getAllData();
+                }
                 int totalRecords = allData.size();
                 if (totalRecords > 20) {
                     data = allData.subList(totalRecords - 20, totalRecords);
@@ -96,20 +110,24 @@ public class RainfallControllerV2 {
     }
 
     @GetMapping("/stats")
-    public ResponseEntity<String> getRainfallStats() {
+    public ResponseEntity<String> getRainfallStats(@RequestParam(required = false) String excludedYears) {
         try {
+            rainfallAnalyticsService.setExcludedYears(excludedYears);
             String html = rainfallAnalyticsService.generateRainfallStatisticsHtml();
+            rainfallAnalyticsService.clearExcludedYears();
             return ResponseEntity.ok(html);
         } catch (Exception e) {
+            rainfallAnalyticsService.clearExcludedYears();
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating statistics: " + e.getMessage() + "</div>");
         }
     }
 
     @GetMapping("/charts/annual")
-    public ResponseEntity<String> getAnnualChart(@RequestParam(defaultValue = "CSV") String dataSource) {
+    public ResponseEntity<String> getAnnualChart(@RequestParam(defaultValue = "CSV") String dataSource,
+                                                @RequestParam(required = false) String excludedYears) {
         try {
-            // Set data source temporarily
-            return getChartResponse(dataSource, () -> rainfallAnalyticsService.generateYearlyRainfallLineChartHtml(), "annual chart");
+            // Set data source temporarily and excluded years
+            return getChartResponse(dataSource, excludedYears, () -> rainfallAnalyticsService.generateYearlyRainfallLineChartHtml(), "annual chart");
         } catch (Exception e) {
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating annual chart: " + e.getMessage() + "</div>");
         }
@@ -208,6 +226,31 @@ public class RainfallControllerV2 {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.ok("<div class='alert alert-danger'>Invalid data source: " + dataSource + "</div>");
         } catch (Exception e) {
+            return ResponseEntity.ok("<div class='alert alert-danger'>Error generating " + chartType + ": " + e.getMessage() + "</div>");
+        }
+    }
+    
+    private ResponseEntity<String> getChartResponse(String dataSource, String excludedYears, Supplier<String> chartGenerator, String chartType) {
+        // Set the data source in the unified service and excluded years in analytics service
+        try {
+            DataSource ds = DataSource.valueOf(dataSource.toUpperCase());
+            unifiedRainfallDataService.setDataSource(ds);
+            
+            // Set excluded years for this request
+            rainfallAnalyticsService.setExcludedYears(excludedYears);
+            
+            // Generate chart using the analytics service (now works with both CSV and KWS data)
+            String html = chartGenerator.get();
+            
+            // Clear excluded years after use
+            rainfallAnalyticsService.clearExcludedYears();
+            
+            return ResponseEntity.ok(html);
+        } catch (IllegalArgumentException e) {
+            rainfallAnalyticsService.clearExcludedYears();
+            return ResponseEntity.ok("<div class='alert alert-danger'>Invalid data source: " + dataSource + "</div>");
+        } catch (Exception e) {
+            rainfallAnalyticsService.clearExcludedYears();
             return ResponseEntity.ok("<div class='alert alert-danger'>Error generating " + chartType + ": " + e.getMessage() + "</div>");
         }
     }

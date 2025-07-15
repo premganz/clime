@@ -97,6 +97,13 @@
                             </div>
                         </div>
                         
+                        <div class="mb-3">
+                            <label for="excludedYears" class="form-label">🚫 Exclude Anomalous Years:</label>
+                            <input type="text" id="excludedYears" class="form-control" placeholder="e.g., 1940,1965,2015" 
+                                   title="Enter comma-separated years to exclude from all calculations and charts">
+                            <div class="form-text">Enter years separated by commas (e.g., 1940,1965,2015)</div>
+                        </div>
+                        
                         <div class="d-grid gap-2">
                             <button id="fetchDataButton" class="btn btn-primary">Get Rainfall Data</button>
                             <button id="fetchStatsButton" class="btn btn-secondary">Get Statistics</button>
@@ -262,6 +269,15 @@
                 return kwsDataSourceRadio && kwsDataSourceRadio.checked ? 'KWS' : 'CSV';
             }
             
+            // Helper function to get excluded years
+            function getExcludedYears() {
+                var excludedYearsInput = document.getElementById('excludedYears');
+                if (excludedYearsInput && excludedYearsInput.value.trim()) {
+                    return excludedYearsInput.value.trim();
+                }
+                return '';
+            }
+            
             // Main data fetch button
             var fetchDataBtn = document.getElementById('fetchDataButton');
             if (fetchDataBtn) {
@@ -269,6 +285,7 @@
                     var year = document.getElementById('year') ? document.getElementById('year').value : '';
                     var startYear = document.getElementById('startYear') ? document.getElementById('startYear').value : '';
                     var endYear = document.getElementById('endYear') ? document.getElementById('endYear').value : '';
+                    var excludedYears = getExcludedYears();
                     
                     var url = '/api/rainfallv2/data?format=html';
                     
@@ -276,6 +293,10 @@
                         url += '&year=' + year;
                     } else if (startYear && endYear) {
                         url += '&startYear=' + startYear + '&endYear=' + endYear;
+                    }
+                    
+                    if (excludedYears) {
+                        url += '&excludedYears=' + encodeURIComponent(excludedYears);
                     }
                     
                     showMessage('🔄 Fetching rainfall data...', 'blue');
@@ -301,9 +322,16 @@
             var fetchStatsBtn = document.getElementById('fetchStatsButton');
             if (fetchStatsBtn) {
                 fetchStatsBtn.onclick = function() {
+                    var excludedYears = getExcludedYears();
+                    var url = '/api/rainfallv2/stats';
+                    
+                    if (excludedYears) {
+                        url += '?excludedYears=' + encodeURIComponent(excludedYears);
+                    }
+                    
                     showMessage('🔄 Generating statistics...', 'blue');
                     
-                    fetch('/api/rainfallv2/stats')
+                    fetch(url)
                         .then(function(response) { return response.text(); })
                         .then(function(data) {
                             var dataElement = document.getElementById('rainfallData');
@@ -323,9 +351,16 @@
             if (showAllChartsBtn) {
                 showAllChartsBtn.onclick = function() {
                     var dataSource = getCurrentDataSource();
+                    var excludedYears = getExcludedYears();
+                    var url = '/api/rainfallstatsv2/charts/all?dataSource=' + dataSource;
+                    
+                    if (excludedYears) {
+                        url += '&excludedYears=' + encodeURIComponent(excludedYears);
+                    }
+                    
                     showMessage('🔄 Generating all charts...', 'blue');
                     
-                    fetch('/api/rainfallstatsv2/charts/all?dataSource=' + dataSource)
+                    fetch(url)
                         .then(function(response) { return response.text(); })
                         .then(function(data) {
                             var dataElement = document.getElementById('rainfallData');
@@ -345,8 +380,15 @@
             if (annualChartBtn) {
                 annualChartBtn.onclick = function() {
                     var dataSource = getCurrentDataSource();
+                    var excludedYears = getExcludedYears();
+                    var url = '/api/rainfallv2/charts/annual?dataSource=' + dataSource;
+                    
+                    if (excludedYears) {
+                        url += '&excludedYears=' + encodeURIComponent(excludedYears);
+                    }
+                    
                     showMessage('🔄 Generating annual rainfall chart...', 'blue');
-                    fetch('/api/rainfallv2/charts/annual?dataSource=' + dataSource)
+                    fetch(url)
                         .then(function(response) { return response.text(); })
                         .then(function(data) {
                             var dataElement = document.getElementById('rainfallData');
@@ -660,6 +702,7 @@
                 var year = document.getElementById('year') ? document.getElementById('year').value : '';
                 var startYear = document.getElementById('startYear') ? document.getElementById('startYear').value : '';
                 var endYear = document.getElementById('endYear') ? document.getElementById('endYear').value : '';
+                var excludedYears = getExcludedYears();
                 
                 // Use the unified endpoint which respects the current data source
                 var url = '/api/datasource/data?format=html';
@@ -668,6 +711,10 @@
                     url += '&year=' + year;
                 } else if (startYear && endYear) {
                     url += '&startYear=' + startYear + '&endYear=' + endYear;
+                }
+                
+                if (excludedYears) {
+                    url += '&excludedYears=' + encodeURIComponent(excludedYears);
                 }
                 
                 showMessage('🔄 Fetching rainfall data...', 'blue');

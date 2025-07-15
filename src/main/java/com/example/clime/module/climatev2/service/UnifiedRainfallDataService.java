@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.stream.Collectors;
 
 @Service("unifiedRainfallDataService")
 public class UnifiedRainfallDataService {
@@ -38,6 +41,11 @@ public class UnifiedRainfallDataService {
         }
     }
     
+    public List<RainfallRecord> getAllData(String excludedYears) throws Exception {
+        List<RainfallRecord> allData = getAllData();
+        return filterExcludedYears(allData, excludedYears);
+    }
+    
     public List<RainfallRecord> getDataByYear(int year) throws Exception {
         if (currentDataSource == DataSource.KWS) {
             return kwsDataService.getDataByYear(year);
@@ -46,12 +54,22 @@ public class UnifiedRainfallDataService {
         }
     }
     
+    public List<RainfallRecord> getDataByYear(int year, String excludedYears) throws Exception {
+        List<RainfallRecord> data = getDataByYear(year);
+        return filterExcludedYears(data, excludedYears);
+    }
+    
     public List<RainfallRecord> getDataByYearRange(int startYear, int endYear) throws Exception {
         if (currentDataSource == DataSource.KWS) {
             return kwsDataService.getDataByYearRange(startYear, endYear);
         } else {
             return csvDataService.getDataByYearRange(startYear, endYear);
         }
+    }
+    
+    public List<RainfallRecord> getDataByYearRange(int startYear, int endYear, String excludedYears) throws Exception {
+        List<RainfallRecord> data = getDataByYearRange(startYear, endYear);
+        return filterExcludedYears(data, excludedYears);
     }
     
     public String generateRainfallTableHtml(List<RainfallRecord> records) {
@@ -90,6 +108,19 @@ public class UnifiedRainfallDataService {
         }
     }
     
+    public double getAverageRainfallForMonth(int month, String excludedYears) {
+        try {
+            List<RainfallRecord> allData = getAllData(excludedYears);
+            return allData.stream()
+                .mapToDouble(record -> getMonthValue(record, month))
+                .average()
+                .orElse(0.0);
+        } catch (Exception e) {
+            System.err.println("Error calculating average rainfall for month " + month + " with excluded years: " + e.getMessage());
+            return getAverageRainfallForMonth(month);
+        }
+    }
+    
     /**
      * Helper method to get rainfall value for a specific month from a record.
      */
@@ -108,6 +139,74 @@ public class UnifiedRainfallDataService {
             case 11: return record.getNov();
             case 12: return record.getDec();
             default: return 0.0;
+        }
+    }
+    
+    /**
+     * Filter out excluded years from a list of rainfall records.
+     * @param records List of rainfall records to filter
+     * @param excludedYears Comma-separated string of years to exclude (e.g., "1940,1965,2015")
+     * @return Filtered list with excluded years removed
+     */
+    private List<RainfallRecord> filterExcludedYears(List<RainfallRecord> records, String excludedYears) {
+        if (excludedYears == null || excludedYears.trim().isEmpty()) {
+            return records;
+        }
+        
+        try {
+            // Parse excluded years from comma-separated string
+            Set<Integer> excludedYearSet = new HashSet<>();
+            String[] yearStrings = excludedYears.trim().split(",");
+            for (String yearStr : yearStrings) {
+                yearStr = yearStr.trim();
+                if (!yearStr.isEmpty()) {
+                    excludedYearSet.add(Integer.parseInt(yearStr));
+                }
+            }
+            
+            // Filter out excluded years
+            return records.stream()
+                .filter(record -> !excludedYearSet.contains(record.getYear()))
+                .collect(Collectors.toList());
+                
+        } catch (NumberFormatException e) {
+            System.err.println("Invalid format for excluded years: " + excludedYears + ". Expected comma-separated integers.");
+            return records; // Return original list if parsing fails
+        }
+    }
+    
+    /**
+     * Parse excluded years string and return information about what was excluded.
+     * @param excludedYears Comma-separated string of years to exclude
+     * @return String describing what years were excluded, or empty string if none
+     */
+    public String getExcludedYearsInfo(String excludedYears) {
+        if (excludedYears == null || excludedYears.trim().isEmpty()) {
+            return "";
+        }
+        
+        try {
+            Set<Integer> excludedYearSet = new HashSet<>();
+            String[] yearStrings = excludedYears.trim().split(",");
+            for (String yearStr : yearStrings) {
+                yearStr = yearStr.trim();
+                if (!yearStr.isEmpty()) {
+                    excludedYearSet.add(Integer.parseInt(yearStr));
+                }
+            }
+            
+            if (excludedYearSet.isEmpty()) {
+                return "";
+            }
+            
+            List<Integer> sortedYears = excludedYearSet.stream().sorted().collect(Collectors.toList());
+            return "<div class='alert alert-warning'><strong>⚠️ Excluded Years:</strong> " + 
+                   sortedYears.stream().map(String::valueOf).collect(Collectors.joining(", ")) + 
+                   " (" + sortedYears.size() + " years excluded from all calculations)</div>";
+                   
+        } catch (NumberFormatException e) {
+            return "<div class='alert alert-danger'><strong>❌ Invalid Excluded Years Format:</strong> " + 
+                   "Please enter years separated by commas (e.g., 1940,1965,2015)</div>";
         }
     }
     

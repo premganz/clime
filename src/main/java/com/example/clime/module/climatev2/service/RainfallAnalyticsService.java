@@ -646,7 +646,7 @@ public class RainfallAnalyticsService {
      */
     public String generateMonthlyTrendLineChartHtml(int month) {
         try {
-            List<RainfallRecord> allData = rainfallDataService.getAllData();
+            List<RainfallRecord> allData = getFilteredData();
             if (allData.isEmpty()) return "<div>No data available.</div>";
         
         // Validate month parameter
@@ -1132,7 +1132,7 @@ public class RainfallAnalyticsService {
      */
     public String generateYearlyBarChartWithMonthlyOffset(int offset) {
         try {
-            List<RainfallRecord> allData = rainfallDataService.getAllData();
+            List<RainfallRecord> allData = getFilteredData();
             if (allData.isEmpty()) return "<div>No data available.</div>";
             
             // Validate offset parameter

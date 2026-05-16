@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Payment detail</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">₹ NEFT Scheduler <span class="tag">demo</span></div>
+    <nav>
+      <a th:href="@{/payments}">Payments</a>
+      <a th:href="@{/payments/new}">+ Schedule new</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h1>Payment <span th:text="${payment.utr}"></span></h1>
+    <div class="card">
+      <dl class="kv">
+        <dt>Status</dt><dd><span class="pill" th:classappend="${'pill-' + payment.status}" th:text="${payment.status}"></span></dd>
+        <dt>Batch slot</dt><dd th:text="${payment.batchSlot}"></dd>
+        <dt>Created</dt><dd th:text="${payment.createdAt}"></dd>
+        <dt>Value date</dt><dd th:text="${payment.valueDate}"></dd>
+        <dt>Amount</dt><dd>₹ <span th:text="${#numbers.formatDecimal(payment.amount,1,'COMMA',2,'POINT')}"></span></dd>
+        <dt>Purpose</dt><dd th:text="${payment.purpose}"></dd>
+        <dt>Remitter</dt><dd><span th:text="${payment.remitterName}"></span> · A/c <span th:text="${payment.remitterAccount}"></span></dd>
+        <dt>Beneficiary</dt><dd><span th:text="${payment.beneficiaryName}"></span> · A/c <span th:text="${payment.beneficiaryAccount}"></span> · <span th:text="${payment.ifsc}"></span></dd>
+        <dt>Advice</dt><dd><span th:text="${payment.adviceEmail}"></span> <span th:if="${payment.adviceMobile}"> · <span th:text="${payment.adviceMobile}"></span></span></dd>
+        <dt th:if="${payment.rejectReason}">Reject reason</dt>
+        <dd th:if="${payment.rejectReason}" th:text="${payment.rejectReason}"></dd>
+      </dl>
+    </div>
+    <p><a th:href="@{/payments}">&larr; Back</a></p>
+  </main>
+  <footer>NEFT batches half-hourly · Demo only · No real money moves.</footer>
+</body>
+</html>

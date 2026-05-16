@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Schedule NEFT Payment</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">₹ NEFT Scheduler <span class="tag">demo</span></div>
+    <nav>
+      <a th:href="@{/payments}">Payments</a>
+      <a th:href="@{/payments/new}" class="active">+ Schedule new</a>
+    </nav>
+  </header>
+  <main class="container">
+    <div th:if="${flash}" class="flash" th:text="${flash}"></div>
+
+    <h1>Schedule a NEFT payment</h1>
+    <form th:action="@{/payments/schedule}" th:object="${payment}" method="post" class="card form">
+
+      <fieldset>
+        <legend>Remitter</legend>
+        <label>Name
+          <input type="text" th:field="*{remitterName}" placeholder="As per bank records" maxlength="60"/>
+          <span class="err" th:if="${#fields.hasErrors('remitterName')}" th:errors="*{remitterName}"></span>
+        </label>
+        <label>Account number
+          <input type="text" th:field="*{remitterAccount}" inputmode="numeric" pattern="\d{9,18}"/>
+          <span class="err" th:if="${#fields.hasErrors('remitterAccount')}" th:errors="*{remitterAccount}"></span>
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Beneficiary</legend>
+        <label>Name
+          <input type="text" th:field="*{beneficiaryName}" maxlength="60"/>
+          <span class="err" th:if="${#fields.hasErrors('beneficiaryName')}" th:errors="*{beneficiaryName}"></span>
+        </label>
+        <label>Account number
+          <input type="text" th:field="*{beneficiaryAccount}" inputmode="numeric" pattern="\d{9,18}"/>
+          <span class="err" th:if="${#fields.hasErrors('beneficiaryAccount')}" th:errors="*{beneficiaryAccount}"></span>
+        </label>
+        <label>IFSC
+          <input type="text" th:field="*{ifsc}" placeholder="HDFC0001234"
+                 style="text-transform:uppercase" maxlength="11"/>
+          <span class="err" th:if="${#fields.hasErrors('ifsc')}" th:errors="*{ifsc}"></span>
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Instruction</legend>
+        <label>Amount (₹)
+          <input type="number" step="0.01" min="1" th:field="*{amount}"/>
+          <span class="err" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}"></span>
+        </label>
+        <label>Value date
+          <input type="date" th:field="*{valueDate}"/>
+          <span class="err" th:if="${#fields.hasErrors('valueDate')}" th:errors="*{valueDate}"></span>
+        </label>
+        <label>Purpose
+          <input type="text" th:field="*{purpose}" placeholder="e.g. Vendor invoice 2026/04/119"/>
+          <span class="err" th:if="${#fields.hasErrors('purpose')}" th:errors="*{purpose}"></span>
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Advice (optional)</legend>
+        <label>Email
+          <input type="email" th:field="*{adviceEmail}"/>
+          <span class="err" th:if="${#fields.hasErrors('adviceEmail')}" th:errors="*{adviceEmail}"></span>
+        </label>
+        <label>Mobile
+          <input type="tel" th:field="*{adviceMobile}" maxlength="10"/>
+          <span class="err" th:if="${#fields.hasErrors('adviceMobile')}" th:errors="*{adviceMobile}"></span>
+        </label>
+      </fieldset>
+
+      <div class="actions">
+        <button type="submit" class="primary">Schedule payment</button>
+        <a th:href="@{/payments}" class="link">Cancel</a>
+      </div>
+    </form>
+  </main>
+  <footer>NEFT batches half-hourly · Demo only · No real money moves.</footer>
+</body>
+</html>

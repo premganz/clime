@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>G9C1 - Experiment in Reactive Control</title>
+  <link rel="stylesheet" href="/css/factory.css" />
+  <link rel="stylesheet" href="/css/petri.css" />
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body>
+  <!-- Model tab strip -->
+  <div class="model-tab-strip">
+    <button class="model-tab active" data-view="factory-view">Conveyor Model</button>
+    <button class="model-tab" data-view="petri-view">Place/Transition Model</button>
+  </div>
+
+  <div id="factory-view" class="active">
+  <header>
+    <button id="ctl-toggle-panel" title="Hide / show panel">&#9776;</button>
+    <h1>Experiment in reactive control</h1>
+    <div id="stats">
+      <span id="ctl-status">IDLE</span>
+      <span>Time: <b id="stat-time" class="run-time" title="Sim time elapsed">-</b></span>
+      <span>Out: <b id="stat-out">0</b>/<b id="stat-batch">0</b></span>
+      <span class="rate-block">Rate: <b id="stat-rate">0.00</b> u/s
+        <span id="stat-trend" class="trend flat" title="30s window trend">&rarr;</span>
+        <span id="stat-rate-bar" class="rate-bar"><span class="rate-bar-fill"></span></span>
+      </span>
+      <span>In flight: <b id="stat-flight">0</b></span>
+      <span>Rejects: <b id="stat-rej">0</b>
+        <span class="rej-chips">
+          <span class="rej yellow" title="yellow rejects">Y <b id="rej-yellow">0</b></span>
+          <span class="rej blue"   title="blue rejects">B <b id="rej-blue">0</b></span>
+          <span class="rej green"  title="green rejects">G <b id="rej-green">0</b></span>
+          <span class="rej gray"   title="gray rejects">X <b id="rej-gray">0</b></span>
+        </span>
+      </span>
+      <span>Speed: <b id="stat-speed">1.0</b>x</span>
+      <span>FPS: <b id="stat-fps">0</b></span>
+    </div>
+  </header>
+
+  <main>
+    <aside id="panel">
+      <div class="row">
+        <label>Batch
+          <input type="number" id="ctl-batch" min="1" max="500" value="100" />
+        </label>
+        <label>Speed
+          <input type="range" id="ctl-speed" min="0.2" max="10" step="0.1" value="1.0" />
+        </label>
+      </div>
+      <div class="row">
+        <button id="ctl-start" class="primary">&#9654; Start</button>
+        <button id="ctl-reset">Reset</button>
+      </div>
+      <div class="row">
+        <button id="ctl-save" class="primary" title="Persist tuning to data/config.json">Save config</button>
+        <button id="ctl-load" title="Reload tuning from data/config.json">Load config</button>
+      </div>
+      <div class="row">
+        <button id="ctl-audit" title="Inspect where every unit currently sits and why">Audit run</button>
+      </div>
+      <div class="row small" id="ctl-save-status"></div>
+      <div class="row small">
+        <label><input type="checkbox" id="ctl-pause" /> Pause</label>
+        <label><input type="checkbox" id="ctl-labels" checked /> Labels</label>
+        <label><input type="checkbox" id="ctl-rates" checked /> Rates</label>
+      </div>
+
+      <details open>
+        <summary>Plant layout</summary>
+        <p class="hint">
+          Three feedstocks &mdash; <b>scrap</b>, <b>core stock</b> and <b>sand</b>.
+          Sand becomes empty mould boxes at <b>MB</b>, which buffer JIT into
+          <b>core setting (CS)</b>; the <b>core maker (CM)</b> drops a core
+          into each box (the box gains a black <b>X</b>). The mould-with-core
+          is then issued to whichever pouring line (<b>A1, A2, KW</b>) is
+          ready. The furnaces (<b>F1, F2</b>) sit ABOVE the lines and pour
+          metal <i>laterally</i> into the boxes &mdash; they do not touch
+          mould prep at all. Once poured the box fills with yellow metal and
+          gains mass.
+        </p>
+        <p class="hint">
+          Castings flow into the <b>pooled shakeout (SK)</b> &rarr; <b>pooled
+          fettling (FT)</b>. The line then snakes back along the bottom row.
+          Before each finishing step (<b>SB, HT, MC, PT</b>) a tiny
+          <b>diamond &diam;</b> decision node decides whether to send the
+          casting forward or to bypass directly to <b>QC</b> (for as-cast,
+          unfinished or unmachined orders).
+        </p>
+      </details>
+
+      <details>
+        <summary>Legend</summary>
+        <ul class="legend">
+          <li><span class="lg lg-station"></span> machine / station</li>
+          <li><span class="lg lg-station red"></span> input buffer &gt; 70 (RED)</li>
+          <li><span class="lg lg-station yellow"></span> output buffer &gt; 70 (YELLOW)</li>
+          <li><span class="lg lg-pallet"></span> pallet (in / out buffer)</li>
+          <li><span class="lg lg-conveyor"></span> conveyor (paced per edge: 0.5s fast / 2s default)</li>
+          <li><span class="lg lg-dispatcher"></span> dispatcher (random route)</li>
+          <li><span class="lg lg-furnace"></span> furnace</li>
+          <li><span class="lg lg-line"></span> pouring line</li>
+        </ul>
+      </details>
+
+      <details>
+        <summary>Unit codes &amp; QC rules</summary>
+        <ul class="legend">
+          <li>Tokens append per stage, joined by <b>-</b>:
+            <b>B</b>(box) <b>S</b>(sand-press) <b>C</b>(core-set) <b>P</b>(pour)
+            <b>Cl</b>(cool) <b>Sh</b>(shakeout) <b>Ft</b>(fettle)
+            <b>T</b>(shot-blast) <b>H</b>(heat) <b>M</b>(machine) <b>F</b>(paint)</li>
+          <li>Colour letter follows <b>B-</b>: <b>Y</b> yellow, <b>B</b> blue, <b>G</b> green, <b>X</b> gray</li>
+          <li>QC accepts only the exact lineage:
+            <br>yellow &rarr; <code>B-Y-S-C-P-Cl-Sh-Ft-T-H-M-F</code>
+            <br>blue &nbsp;&rarr; <code>B-B-S-C-P-Cl-Sh-Ft-T-H</code>
+            <br>green &rarr; <code>B-G-S-P-Cl-Sh-Ft-T-H-M-F</code>
+            <br>gray &nbsp;&rarr; <code>B-X-S-C-P-Cl-Sh-Ft</code>
+          </li>
+          <li>Anything else is rejected and counted in the header.</li>
+        </ul>
+      </details>
+
+      <details open>
+        <summary>Tuning knobs</summary>
+        <div class="tab-strip" id="tab-strip">
+          <button class="tab" data-tab="boost">Boosting</button>
+          <button class="tab" data-tab="weight">Routing</button>
+          <button class="tab" data-tab="processTime">Proc time</button>
+        </div>
+        <p class="hint" id="tab-hint"></p>
+        <div id="node-controls"></div>
+      </details>
+    </aside>
+
+    <section id="stage">
+      <canvas id="floor"></canvas>
+
+      <!-- Floating gauge "control device" -->
+      <div id="gauge-device" class="collapsed">
+        <div class="gd-header">
+          <span class="gd-title">&#9881; Buffer dials</span>
+          <button id="gd-toggle" title="Collapse / expand">&#8211;</button>
+        </div>
+        <div class="gd-body">
+          <p class="gd-legend">
+            Each device shows two dials &mdash; <b style="color:#4880c8">IN</b> and
+            <b style="color:#e8c060">OUT</b> buffer counts (0&ndash;100).<br/>
+            Zones: <b style="color:#5aab63">0&ndash;20</b> /
+            <b style="color:#e8c060">20&ndash;70</b> /
+            <b style="color:#cf4747">70+</b>.
+          </p>
+          <label class="gd-row">Devices
+            <button id="gd-pick" type="button">Select&hellip;</button>
+          </label>
+          <div id="gd-picker" class="gd-picker"></div>
+          <div id="gd-gauges"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Audit modal -->
+  <div id="audit-modal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-h">
+        <span class="modal-title">Run audit</span>
+        <button id="audit-copy" class="primary" title="Copy plain text to clipboard">Copy</button>
+        <button id="audit-download" title="Download as text file">Download</button>
+        <button id="audit-close" title="Close">&times;</button>
+      </div>
+      <div class="modal-body" id="audit-body"></div>
+    </div>
+  </div>
+
+  </div><!-- /factory-view -->
+
+  <!-- ============ Place/Transition (Petri net) model ============ -->
+  <div id="petri-view">
+    <header>
+      <h1>Place/Transition Model</h1>
+      <div id="p-stats">
+        <span id="p-status">IDLE</span>
+        <span>Time: <b id="p-time">-</b></span>
+        <span>Out: <b id="p-out">0</b>/<b id="p-batch">0</b></span>
+        <span>In flight: <b id="p-flight">0</b></span>
+        <span>Rejects: <b id="p-rej">0</b>
+          <span class="rej-chips">
+            <span class="rej yellow">Y <b id="p-rej-y">0</b></span>
+            <span class="rej blue">B <b id="p-rej-b">0</b></span>
+            <span class="rej green">G <b id="p-rej-g">0</b></span>
+            <span class="rej gray">X <b id="p-rej-x">0</b></span>
+          </span>
+        </span>
+        <span>Speed: <b id="p-speed">1.0</b>x</span>
+        <span>FPS: <b id="p-fps">0</b></span>
+      </div>
+    </header>
+
+    <aside id="petri-panel">
+      <div class="row">
+        <label>Batch
+          <input type="number" id="p-batch-input" min="1" max="500" value="100" />
+        </label>
+        <label>Speed
+          <input type="range" id="p-speed-input" min="1" max="20" step="1" value="1" list="speed-ticks" />
+          <datalist id="speed-ticks"><option value="1"></option><option value="5"></option><option value="10"></option><option value="15"></option><option value="20"></option></datalist>
+        </label>
+      </div>
+      <div class="row">
+        <button id="p-start" class="primary">&#9654; Start</button>
+        <button id="p-reset">Reset</button>
+      </div>
+      <div class="row small">
+        <label><input type="checkbox" id="p-pause" /> Pause</label>
+        <label><input type="checkbox" id="p-backpressure" /> Backpressure</label>
+      </div>
+
+      <details>
+        <summary>About this model</summary>
+        <p class="hint">
+          <b>Places</b> (circles) are bins where tokens accumulate.
+          <b>Transitions</b> (rectangles) are machines that pull from
+          input bins and push to output bins.
+        </p>
+        <p class="hint">
+          <b>Click any machine</b> to configure its <em>tick interval</em>
+          and <em>boost</em>. Use the RHS panel for master control.
+        </p>
+        <p class="hint">
+          <b>Routing</b> is deterministic per colour (matching the factory
+          schematic). Gray/blue skip some finishing steps.
+        </p>
+        <p class="hint">
+          <b>Backpressure</b> (master switch) slows firing when output bins
+          are over-filled. Boost overrides backpressure.
+        </p>
+      </details>
+
+      <details>
+        <summary>Legend</summary>
+        <ul class="legend">
+          <li><span class="lg" style="background:#fff;border-radius:50%"></span> bin (place)</li>
+          <li><span class="lg lg-station"></span> machine (transition)</li>
+          <li><span class="lg lg-furnace"></span> furnace (batch)</li>
+          <li style="color:#5577aa">&#8594; input arc</li>
+          <li style="color:#55aa77">&#8594; output arc</li>
+          <li style="color:#aa7755">&#8594; routed (bypass)</li>
+        </ul>
+      </details>
+
+      <!-- Buffer gauges -->
+      <details open>
+        <summary>Buffer Gauges</summary>
+        <div id="p-gd-gauges" class="gauge-grid"></div>
+      </details>
+    </aside>
+
+    <section id="petri-stage">
+      <canvas id="petri-canvas"></canvas>
+    </section>
+
+    <!-- RHS Master Control Panel -->
+    <aside id="petri-rhs-panel">
+      <div id="p-tab-strip">
+        <button class="tab active" data-tab="boost">Boost</button>
+        <button class="tab" data-tab="processTime">Proc Time</button>
+        <button class="tab" data-tab="routing">Routing</button>
+      </div>
+      <div id="p-tab-hint" class="tab-hint"></div>
+      <div id="p-node-controls"></div>
+    </aside>
+
+    <div id="p-machine-popup" style="display:none">
+      <div class="popup-header">
+        <span class="popup-title"></span>
+        <span class="popup-id"></span>
+        <button id="pp-close">&times;</button>
+      </div>
+      <table class="popup-tbl">
+        <tr><td>Inputs</td><td id="pp-inputs"></td></tr>
+        <tr><td>Outputs</td><td id="pp-outputs"></td></tr>
+        <tr id="pp-batch-row"><td>Batch size</td><td id="pp-batch-size"></td></tr>
+        <tr><td>Slots</td><td id="pp-slots"></td></tr>
+        <tr><td>Total in / out</td><td><span id="pp-in">0</span> / <span id="pp-out">0</span></td></tr>
+      </table>
+      <div class="popup-knobs">
+        <label>Tick interval <b id="pp-interval-val"></b>
+          <input type="range" id="pp-interval" min="0.5" max="60" step="0.5" />
+        </label>
+        <label>Boost (replicas) <b id="pp-boost-val"></b>
+          <input type="range" id="pp-boost" min="1" max="6" step="1" />
+        </label>
+        <div class="popup-calc">
+          Effective interval: <b id="pp-eff"></b> &nbsp;|&nbsp;
+          Throughput: <b id="pp-tput"></b>
+        </div>
+      </div>
+    </div>
+  </div><!-- /petri-view -->
+
+  <script src="/js/factory.js"></script>
+  <script src="/js/petri.js"></script>
+  <script>
+    // Model tab switching
+    $(function () {
+      $('.model-tab-strip').on('click', '.model-tab', function () {
+        var view = this.getAttribute('data-view');
+        $('.model-tab').removeClass('active');
+        $(this).addClass('active');
+        // Hide both views, then show the selected one
+        $('#factory-view').removeClass('active');
+        $('#petri-view').removeClass('active');
+        $('#' + view).addClass('active');
+        if (view === 'petri-view') {
+          window.dispatchEvent(new Event('resize'));
+        }
+      });
+    });
+  </script>
+</body>
+</html>

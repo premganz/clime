@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chennai Rainfall Analytics V2</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        .chart-container {
+            position: relative;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .rainfall-results {
+            min-height: 200px;
+        }
+        .loading-message {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Navigation -->
+        <div class="row">
+            <div class="col-12">
+                <div class="mb-3">
+                    <a href="/" class="btn btn-outline-secondary">← Back to Super App</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Header -->
+        <div class="row">
+            <div class="col-12">
+                <header class="text-center py-4">
+                    <h1 class="display-4">🌧️ Chennai Rainfall Analytics V2</h1>
+                    <p class="lead">100+ Years of Rainfall Data Analysis (1901-2021)</p>
+                    <p class="text-muted">Data Source: Chennai Monthly Rainfall Records</p>
+                </header>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="row g-4">
+            <!-- Left Column - Data Controls -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">📊 Data Controls</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="message" class="alert alert-info d-none"></div>
+                        
+                        <!-- Data Source Selection -->
+                        <div class="mb-3">
+                            <label class="form-label">📊 Data Source Selection</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="dataSource" id="csvDataSource" value="csv" checked>
+                                <label class="form-check-label" for="csvDataSource">
+                                    CSV Data (1901-2021)
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="dataSource" id="kwsDataSource" value="kws">
+                                <label class="form-check-label" for="kwsDataSource">
+                                    KWS Data (2000-2025)
+                                </label>
+                            </div>
+                            <div id="currentDataSource" class="mt-2 text-muted small">
+                                Current: CSV Data - Chennai Monthly Rainfall Records (1901-2021)
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="year" class="form-label">Specific Year:</label>
+                            <select id="year" class="form-select">
+                                <option value="">All Years (Last 20)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Year Range:</label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <input type="number" id="startYear" class="form-control" placeholder="Start Year" min="1901" max="2021">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" id="endYear" class="form-control" placeholder="End Year" min="1901" max="2021">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button id="fetchDataButton" class="btn btn-primary">Get Rainfall Data</button>
+                            <button id="fetchStatsButton" class="btn btn-secondary">Get Statistics</button>
+                            <button id="showAllChartsButton" class="btn btn-success">Show All Charts</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Center Column - Chart Controls -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">📈 Chart Options</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Generate specific charts for detailed analysis:</p>
+                        
+                        <div class="d-grid gap-2">
+                            <button id="annualChartButton" class="btn btn-outline-primary">📊 Annual Rainfall Trend (Chart.js)</button>
+                            <button id="yearlySvgChartButton" class="btn btn-outline-primary">📈 Yearly Rainfall (SVG)</button>
+                            <button id="monthlyChartButton" class="btn btn-outline-secondary">📅 Monthly Averages</button>
+                            <div class="input-group mb-2 mt-2">
+                                <span class="input-group-text">Month</span>
+                                <select id="monthSelect" class="form-select" style="max-width:120px;">
+                                    <option value="1">Jan</option>
+                                    <option value="2">Feb</option>
+                                    <option value="3">Mar</option>
+                                    <option value="4">Apr</option>
+                                    <option value="5">May</option>
+                                    <option value="6">Jun</option>
+                                    <option value="7">Jul</option>
+                                    <option value="8">Aug</option>
+                                    <option value="9">Sep</option>
+                                    <option value="10">Oct</option>
+                                    <option value="11">Nov</option>
+                                    <option value="12">Dec</option>
+                                </select>
+                                <button id="monthlyTrendChartButton" class="btn btn-outline-warning">📈 Monthly Trend</button>
+                            </div>
+                            <div class="input-group mb-2">
+                                <span class="input-group-text">Decade Offset</span>
+                                <input type="number" id="decadeOffsetInput" class="form-control" min="0" max="9" value="0" style="max-width:70px;">
+                                <button id="decadeOffsetChartButton" class="btn btn-outline-info">📆 Decade Comparison (Offset)</button>
+                            </div>
+                            <button id="decadeChartButton" class="btn btn-outline-info">📆 Decade Comparison (Standard)</button>
+                            <button id="chennaiRainfallButton" class="btn btn-outline-success mt-2">🌧️ Chennai Rainfall Trend</button>
+                            <button id="kwsRainfallAnalyticsButton" class="btn btn-outline-primary mt-2">🌐 KWS Rainfall Analytics</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column - Quick Actions -->
+            <div class="col-lg-4 col-md-12">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">⚡ Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Quick access to common queries:</p>
+                        <div class="d-grid gap-2">
+                            <button id="recentYearsButton" class="btn btn-outline-warning">Last 10 Years</button>
+                            <button id="centuryViewButton" class="btn btn-outline-danger">20th Century View</button>
+                            <button id="modernEraButton" class="btn btn-outline-success">21st Century</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Results Section -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">📊 Results</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="rainfallData" class="rainfall-results">
+                            <div class="loading-message">
+                                <p>👆 Click any button above to start exploring Chennai rainfall data!</p>
+                                <p class="text-muted">Available data: 1901-2021 (121 years)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+    <script>
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Populate year dropdown
+            var yearSelect = document.getElementById('year');
+            if (yearSelect) {
+                for (var y = 1901; y <= 2021; y++) {
+                    var option = document.createElement('option');
+                    option.value = y;
+                    option.textContent = y;
+                    yearSelect.appendChild(option);
+                }
+            }
+            
+            // Helper function to show messages
+            function showMessage(text, color) {
+                var messageEl = document.getElementById('message');
+                if (messageEl) {
+                    messageEl.textContent = text;
+                    messageEl.style.color = color;
+                    messageEl.style.fontSize = '16px';
+                    messageEl.style.fontWeight = 'bold';
+                    messageEl.classList.remove('d-none');
+                }
+            }
+            
+            // Helper function to get current data source
+            function getCurrentDataSource() {
+                var kwsDataSourceRadio = document.getElementById('kwsDataSource');
+                return kwsDataSourceRadio && kwsDataSourceRadio.checked ? 'KWS' : 'CSV';
+            }
+            
+            // Main data fetch button
+            var fetchDataBtn = document.getElementById('fetchDataButton');
+            if (fetchDataBtn) {
+                fetchDataBtn.onclick = function() {
+                    var year = document.getElementById('year') ? document.getElementById('year').value : '';
+                    var startYear = document.getElementById('startYear') ? document.getElementById('startYear').value : '';
+                    var endYear = document.getElementById('endYear') ? document.getElementById('endYear').value : '';
+                    
+                    var url = '/api/rainfallv2/data?format=html';
+                    
+                    if (year) {
+                        url += '&year=' + year;
+                    } else if (startYear && endYear) {
+                        url += '&startYear=' + startYear + '&endYear=' + endYear;
+                    }
+                    
+                    showMessage('🔄 Fetching rainfall data...', 'blue');
+                    
+                    fetch(url)
+                        .then(function(response) { 
+                            return response.text(); 
+                        })
+                        .then(function(data) {
+                            var dataElement = document.getElementById('rainfallData');
+                            if (dataElement) {
+                                dataElement.innerHTML = data;
+                            }
+                            showMessage('✅ Rainfall data loaded successfully!', 'green');
+                        })
+                        .catch(function(error) {
+                            showMessage('❌ Error: ' + error.message, 'red');
+                        });
+                };
+            }
+            
+            // Statistics button
+            var fetchStatsBtn = document.getElementById('fetchStatsButton');
+            if (fetchStatsBtn) {
+                fetchStatsBtn.onclick = function() {
+                    showMessage('🔄 Generating statistics...', 'blue');
+                    
+                    fetch('/api/rainfallv2/stats')
+                        .then(function(response) { return response.text(); })
+                        .then(function(data) {
+                            var dataElement = document.getElementById('rainfallData');
+                            if (dataElement) {
+                                dataElement.innerHTML = data;
+                            }
+                            showMessage('✅ Statistics generated successfully!', 'green');
+                        })
+                        .catch(function(error) {
+                            showMessage('❌ Error: ' + error.message, 'red');
+                        });
+                };
+            }
+            
+            // Show all charts button
+            var showAllChartsBtn = document.getElementById('showAllChartsButton');
+            if (showAllChartsBtn) {
+                showAllChartsBtn.onclick = function() {
+                    var dataSource = getCurrentDataSource();
+                    showMessage('🔄 Generating all charts...', 'blue');
+                    
+                    fetch('/api/rainfallstatsv2/charts/all?dataSource=' + dataSource)
+                        .then(function(response) { return response.text(); })
+                        .then(function(data) {
+                            var dataElement = document.getElementById('rainfallData');
+                            if (dataElement) {
+                                dataElement.innerHTML = data;
+                            }
+                            showMessage('✅ All charts generated successfully!', 'green');
+                        })
+                        .catch(function(error) {
+                            showMessage('❌ Error: ' + error.message, 'red');
+                        });
+                };
+            }
+            
+            // Individual chart buttons
+            var annualChartBtn = document.getElementById('annualChartButton');
+            if (annualChartBtn) {
+                annualChartBtn.onclick = function() {
+                    var dataSource = getCurrentDataSource();
+                    showMessage('🔄 Generating annual rainfall chart...', 'blue');
+                    fetch('/api/rainfallv2/charts/annual?dataSource=' + dataSource)
+                        .then(function(response) { return response.text(); })
+                        .then(function(data) {
+                            var dataElement = document.getElementById('rainfallData');
+                            if (dataElement) {
+                                dataElement.innerHTML = data;
+                            }
+                            showMessage('✅ Annual chart generated!', 'green');
+                        })
+                        .catch(function(error) {
+                            showMessage('❌ Error: ' + error.message, 'red');
+                        });
+                };
+            }
+            
+            var yearlySvgChartBtn = document.getElementById('yearlySvgChartButton');
+            if (yearlySvgChartBtn) {
+                yearlySvgChartBtn.onclick = function() {
+                    var dataSource = getCurrentDataSource();
+                    showMessage('🔄 Generating yearly SVG line chart...', 'blue');
+                    fetch('/api/rainfallv2/charts/yearly-svg?dataSource=' + dataSource)
+                        .then(function(response) { return response.text(); })
+                        .then(function(data) {
+                            var dataElement = document.getElementById('rainfallData');
+                            if (dataElement) {
+                                dataElement.innerHTML = data;
+                            }
+                            showMessage('✅ Yearly SVG chart generated!', 'green');
+                        })
+                        .catch(function(error) {
+                            showMessage('❌ Error: ' + error.message, 'red');
+                        });
+                };
+            }
+
+            var monthlyChartBtn = document.getElementById('monthlyChartButton');
+            if (monthlyChartBtn) {
+                monthlyChartBtn.onclick = function() {
+                    var dataSource = getCurrentDataSource();
+                    showMessage('🔄 Generating monthly averages chart...', 'blue');
+                    fetch('/api/rainfallv2/charts/monthly?dataSource=' + dataSource)
+                        .then(function(response) { return response.text(); })
+                        .then(function(data) {
+                            var dataElement = document.getElementById('rainfallData');
+                            if (dataElement) {
+                                dataElement.innerHTML = data;
+                            }
+                            showMessage('✅ Monthly chart generated!', 'green');
+                        })
+                        .catch(function(error) {
+                            showMessage('❌ Error: ' + error.message, 'red');
+                        });
+                };
+            }
+
+            var monthlyTrendChartBtn = document.getElementById('monthlyTrendChartButton');
+            if (monthlyTrendChartBtn) {
+                monthlyTrendChartBtn.onclick = function() {
+                    var month = document.getElementById('monthSelect').value || 1;
+                    var dataSource = getCurrentDataSource();
+                    var monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    var monthName = monthNames[month - 1];
+                    showMessage('🔄 Generating ' + monthName + ' trend chart...', 'blue');
+                    fetch('/api/rainfallv2/charts/monthly-trend?month=' + month + '&dataSource=' + dataSource)
+                        .then(function(response) { return response.text(); })
+                        .then(function(data) {
+                            var dataElement = document.getElementById('rainfallData');
+                            if (dataElement) {
+                                dataElement.innerHTML = data;
+                            }
+                            showMessage('✅ ' + monthName + ' trend chart generated!', 'green');
+                        })
+                        .catch(function(error) {
+                            showMessage('❌ Error: ' + error.message, 'red');
+                        });
+                };
+            }
+
+            var decadeOffsetChartBtn = document.getElementById('decadeOffsetChartButton');
+            if (decadeOffsetChartBtn) {
+                decadeOffsetChartBtn.onclick = function() {
+                    var offset = document.getElementById('decadeOffsetInput').value || 0;
+                    var dataSource = getCurrentDataSource();
+                    showMessage('🔄 Generating offset decade chart...', 'blue');
+                    fetch('/api/rainfallv2/charts/decade-offset?offset=' + offset + '&dataSource=' + dataSource)
+                        .then(function(response) { return response.text(); })
+                        .then(function(data) {
+                            var dataElement = document.getElementById('rainfallData');
+                            if (dataElement) {
+                                dataElement.innerHTML = data;
+                            }
+                            showMessage('✅ Offset decade chart generated!', 'green');
+                        })
+                        .catch(function(error) {
+                            showMessage('❌ Error: ' + error.message, 'red');
+                        });
+                };
+            }
+            
+            var decadeChartBtn = document.getElementById('decadeChartButton');
+            if (decadeChartBtn) {
+                decadeChartBtn.onclick = function() {
+                    var dataSource = getCurrentDataSource();
+                    showMessage('🔄 Generating decade comparison chart...', 'blue');
+                    fetch('/api/rainfallv2/charts/decade?dataSource=' + dataSource)
+                        .then(function(response) { return response.text(); })
+                        .then(function(data) {
+                            var dataElement = document.getElementById('rainfallData');
+                            if (dataElement) {
+                                dataElement.innerHTML = data;
+                            }
+                            showMessage('✅ Decade chart generated!', 'green');
+                        })
+                        .catch(function(error) {
+                            showMessage('❌ Error: ' + error.message, 'red');
+                        });
+                };
+            }
+            
+            // Chennai Rainfall Trend button
+            var chennaiRainfallBtn = document.getElementById('chennaiRainfallButton');
+            if (chennaiRainfallBtn) {
+                chennaiRainfallBtn.onclick = function() {
+                    showMessage('🔄 Generating Chennai rainfall trend chart...', 'blue');
+                    fetch('/climateV2/chennai-rainfall-html')
+                        .then(function(response) { return response.text(); })
+                        .then(function(data) {
+                            var dataElement = document.getElementById('rainfallData');
+                            if (dataElement) {
+                                dataElement.innerHTML = data;
+                            }
+                            showMessage('✅ Chennai rainfall trend chart generated!', 'green');
+                        })
+                        .catch(function(error) {
+                            showMessage('❌ Error: ' + error.message, 'red');
+                        });
+                };
+            }
+            
+            // Quick action buttons
+            var recentYearsBtn = document.getElementById('recentYearsButton');
+            if (recentYearsBtn) {
+                recentYearsBtn.onclick = function() {
+                    document.getElementById('startYear').value = '2012';
+                    document.getElementById('endYear').value = '2021';
+                    document.getElementById('fetchDataButton').click();
+                };
+            }
+            
+            var centuryViewBtn = document.getElementById('centuryViewButton');
+            if (centuryViewBtn) {
+                centuryViewBtn.onclick = function() {
+                    document.getElementById('startYear').value = '1901';
+                    document.getElementById('endYear').value = '2000';
+                    document.getElementById('fetchDataButton').click();
+                };
+            }
+            
+            var modernEraBtn = document.getElementById('modernEraButton');
+            if (modernEraBtn) {
+                modernEraBtn.onclick = function() {
+                    document.getElementById('startYear').value = '2001';
+                    document.getElementById('endYear').value = '2021';
+                    document.getElementById('fetchDataButton').click();
+                };
+            }
+            
+            // Data source toggle functionality
+            var csvDataSourceRadio = document.getElementById('csvDataSource');
+            var kwsDataSourceRadio = document.getElementById('kwsDataSource');
+            var currentDataSourceDiv = document.getElementById('currentDataSource');
+            
+            function updateDataSourceDisplay() {
+                if (kwsDataSourceRadio.checked) {
+                    currentDataSourceDiv.innerHTML = 'Current: <strong>KWS Data</strong> - KWS Chennai website data (2000-2025)';
+                    // Update year range limits for KWS data
+                    document.getElementById('startYear').min = '2000';
+                    document.getElementById('startYear').max = '2025';
+                    document.getElementById('endYear').min = '2000'; 
+                    document.getElementById('endYear').max = '2025';
+                } else {
+                    currentDataSourceDiv.innerHTML = 'Current: <strong>CSV Data</strong> - Chennai Monthly Rainfall Records (1901-2021)';
+                    // Reset year range limits for CSV data
+                    document.getElementById('startYear').min = '1901';
+                    document.getElementById('startYear').max = '2021';
+                    document.getElementById('endYear').min = '1901';
+                    document.getElementById('endYear').max = '2021';
+                }
+            }
+            
+            if (csvDataSourceRadio) {
+                csvDataSourceRadio.onchange = function() {
+                    updateDataSourceDisplay();
+                    showMessage('🔄 Switched to CSV data source', 'blue');
+                };
+            }
+            
+            if (kwsDataSourceRadio) {
+                kwsDataSourceRadio.onchange = function() {
+                    updateDataSourceDisplay();
+                    showMessage('🔄 Switched to KWS data source', 'blue');
+                };
+            }
+            
+            // Initialize data source display
+            updateDataSourceDisplay();
+            
+            // KWS Rainfall Analytics button
+            var kwsRainfallAnalyticsBtn = document.getElementById('kwsRainfallAnalyticsButton');
+            if (kwsRainfallAnalyticsBtn) {
+                kwsRainfallAnalyticsBtn.onclick = function() {
+                    showMessage('🔄 Loading KWS rainfall analytics...', 'blue');
+                    fetch('/api/kws-rainfall/status')
+                        .then(function(response) { return response.text(); })
+                        .then(function(data) {
+                            var dataElement = document.getElementById('rainfallData');
+                            if (dataElement) {
+                                dataElement.innerHTML = data;
+                            }
+                            showMessage('✅ KWS rainfall analytics loaded!', 'green');
+                        })
+                        .catch(function(error) {
+                            showMessage('❌ Error: ' + error.message, 'red');
+                        });
+                };
+            }
+            
+            // Update the main fetch data button to handle both data sources
+            fetchDataBtn.onclick = function() {
+                var year = document.getElementById('year') ? document.getElementById('year').value : '';
+                var startYear = document.getElementById('startYear') ? document.getElementById('startYear').value : '';
+                var endYear = document.getElementById('endYear') ? document.getElementById('endYear').value : '';
+                var isKwsData = kwsDataSourceRadio.checked;
+                
+                var url;
+                if (isKwsData) {
+                    url = '/api/kws-rainfall/data';
+                } else {
+                    url = '/api/rainfallv2/data?format=html';
+                }
+                
+                if (year) {
+                    url += (isKwsData ? '?' : '&') + 'year=' + year;
+                } else if (startYear && endYear) {
+                    url += (isKwsData ? '?' : '&') + 'startYear=' + startYear + '&endYear=' + endYear;
+                }
+                
+                var dataSourceText = isKwsData ? 'KWS data' : 'CSV data';
+                showMessage('🔄 Fetching ' + dataSourceText + '...', 'blue');
+                
+                fetch(url)
+                    .then(function(response) { 
+                        return response.text(); 
+                    })
+                    .then(function(data) {
+                        var dataElement = document.getElementById('rainfallData');
+                        if (dataElement) {
+                            dataElement.innerHTML = data;
+                        }
+                        showMessage('✅ ' + dataSourceText.charAt(0).toUpperCase() + dataSourceText.slice(1) + ' loaded successfully!', 'green');
+                    })
+                    .catch(function(error) {
+                        showMessage('❌ Error: ' + error.message, 'red');
+                    });
+            };
+        });
+    </script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

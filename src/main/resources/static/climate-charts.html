@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Climate Charts Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Chart.js from alternative CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"></script>
+    <!-- html2canvas for screenshot functionality -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+        
+        .control-panel {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .chart-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: none;
+        }
+        
+        .export-btn {
+            margin: 5px;
+        }
+        
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .success-message {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            border: none;
+            color: #2c3e50;
+        }
+        
+        .error-message {
+            background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);
+            border: none;
+            color: white;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b4e87 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        @media (max-width: 768px) {
+            .control-panel, .chart-card {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+            
+            .chart-container {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/"><i class="fas fa-cloud-sun"></i> Climate Charts Dashboard</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/"><i class="fas fa-home"></i> Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/climatev2"><i class="fas fa-chart-line"></i> Rainfall V2</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/climate-charts"><i class="fas fa-chart-bar"></i> Charts Dashboard</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Header -->
+        <div class="row">
+            <div class="col-12">
+                <div class="text-center mb-4">
+                    <h1 class="display-4"><i class="fas fa-chart-area"></i> Enhanced Climate Charts Dashboard</h1>
+                    <p class="lead">Interactive Year-wise and Offset Climate Data Visualization</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="row">
+            <div class="col-12">
+                <div class="control-panel">
+                    <h3><i class="fas fa-sliders-h"></i> Chart Configuration</h3>
+                    <div class="row">
+                        <!-- Year-wise Controls -->
+                        <div class="col-lg-6">
+                            <h5><i class="fas fa-calendar-alt"></i> Year-wise Chart Controls</h5>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">From Year</label>
+                                    <input type="number" id="fromYear" class="form-control" min="1901" max="2025" value="2015" placeholder="Start year">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">To Year</label>
+                                    <input type="number" id="toYear" class="form-control" min="1901" max="2025" value="2021" placeholder="End year">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Chart Type</label>
+                                    <select id="chartType" class="form-select">
+                                        <option value="line">Line Chart</option>
+                                        <option value="bar">Bar Chart</option>
+                                        <option value="area">Area Chart</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Data Metric</label>
+                                    <select id="dataMetric" class="form-select">
+                                        <option value="total">Total Rainfall</option>
+                                        <option value="monthly">Monthly Average</option>
+                                        <option value="seasonal">Seasonal Total</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button id="generateYearWiseChart" class="btn btn-light btn-lg w-100">
+                                <i class="fas fa-chart-line"></i> Generate Year-wise Chart
+                            </button>
+                        </div>
+
+                        <!-- Offset Controls -->
+                        <div class="col-lg-6">
+                            <h5><i class="fas fa-arrows-alt-h"></i> Offset Chart Controls</h5>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Month Offset (1-12)</label>
+                                    <select id="monthOffset" class="form-select">
+                                        <option value="1">January (1)</option>
+                                        <option value="2">February (2)</option>
+                                        <option value="3">March (3)</option>
+                                        <option value="4">April (4)</option>
+                                        <option value="5">May (5)</option>
+                                        <option value="6">June (6)</option>
+                                        <option value="7">July (7)</option>
+                                        <option value="8">August (8)</option>
+                                        <option value="9">September (9)</option>
+                                        <option value="10">October (10)</option>
+                                        <option value="11">November (11)</option>
+                                        <option value="12">December (12)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Analysis Year</label>
+                                    <input type="number" id="offsetYear" class="form-control" min="1901" max="2025" value="2020" placeholder="Analysis year">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <label class="form-label">Comparison Type</label>
+                                    <select id="offsetComparisonType" class="form-select">
+                                        <option value="monthly">Monthly Trend Analysis</option>
+                                        <option value="decade">Decade Offset Comparison</option>
+                                        <option value="annual">Annual Pattern Offset</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button id="generateOffsetChart" class="btn btn-light btn-lg w-100">
+                                <i class="fas fa-arrows-alt-h"></i> Generate Offset Chart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="statusMessage" class="row d-none">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <div class="d-flex align-items-center">
+                        <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                        <span id="statusText">Processing...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart Display Area -->
+        <div class="row">
+            <div class="col-12">
+                <div class="chart-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 id="chartTitle"><i class="fas fa-chart-area"></i> Climate Data Visualization</h4>
+                        <div class="export-controls d-none" id="exportControls">
+                            <button class="btn btn-success export-btn" onclick="exportChart('png')">
+                                <i class="fas fa-download"></i> PNG
+                            </button>
+                            <button class="btn btn-info export-btn" onclick="exportChart('pdf')">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </button>
+                            <button class="btn btn-warning export-btn" onclick="takeScreenshot()">
+                                <i class="fas fa-camera"></i> Screenshot
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="chartDisplayArea">
+                        <div class="loading-spinner">
+                            <div class="text-center">
+                                <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">Select chart options above to get started</h5>
+                                <p class="text-muted">Choose year range and chart type to generate interactive visualizations</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chart.js Canvas -->
+                    <canvas id="interactiveChart" class="d-none"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metrics Cards -->
+        <div class="row" id="metricsRow" style="display: none;">
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-value" id="totalRecords">-</div>
+                    <div class="metric-label">Total Records</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-value" id="averageValue">-</div>
+                    <div class="metric-label">Average Value</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-value" id="maxValue">-</div>
+                    <div class="metric-label">Maximum Value</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-value" id="minValue">-</div>
+                    <div class="metric-label">Minimum Value</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let currentChart = null;
+        
+        // Chart configuration
+        const chartColors = {
+            primary: 'rgba(102, 126, 234, 0.8)',
+            secondary: 'rgba(118, 75, 162, 0.8)',
+            success: 'rgba(40, 167, 69, 0.8)',
+            danger: 'rgba(220, 53, 69, 0.8)',
+            warning: 'rgba(255, 193, 7, 0.8)',
+            info: 'rgba(23, 162, 184, 0.8)'
+        };
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('statusMessage');
+            const statusText = document.getElementById('statusText');
+            const alertDiv = statusDiv.querySelector('.alert');
+            
+            statusText.textContent = message;
+            alertDiv.className = `alert alert-${type}`;
+            statusDiv.classList.remove('d-none');
+            
+            if (type !== 'info') {
+                setTimeout(() => {
+                    statusDiv.classList.add('d-none');
+                }, 5000);
+            }
+        }
+
+        function hideStatus() {
+            document.getElementById('statusMessage').classList.add('d-none');
+        }
+
+        function showExportControls() {
+            document.getElementById('exportControls').classList.remove('d-none');
+        }
+
+        function updateMetrics(data) {
+            const values = data.map(item => item.total || item.value || 0);
+            const total = values.length;
+            const average = values.reduce((a, b) => a + b, 0) / total;
+            const max = Math.max(...values);
+            const min = Math.min(...values);
+
+            document.getElementById('totalRecords').textContent = total;
+            document.getElementById('averageValue').textContent = Math.round(average * 10) / 10;
+            document.getElementById('maxValue').textContent = Math.round(max * 10) / 10;
+            document.getElementById('minValue').textContent = Math.round(min * 10) / 10;
+            document.getElementById('metricsRow').style.display = 'flex';
+        }
+
+        function createChart(data, type, title) {
+            // Check if Chart.js is loaded
+            if (typeof Chart === 'undefined') {
+                showStatus('Chart.js library not loaded. Please refresh the page.', 'danger');
+                return;
+            }
+            
+            const ctx = document.getElementById('interactiveChart').getContext('2d');
+            
+            // Destroy existing chart
+            if (currentChart) {
+                currentChart.destroy();
+            }
+
+            // Prepare data based on chart type
+            const labels = data.map(item => item.year || item.label);
+            const values = data.map(item => item.total || item.value || 0);
+
+            const chartConfig = {
+                type: type === 'area' ? 'line' : type,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: title,
+                        data: values,
+                        backgroundColor: type === 'area' ? chartColors.primary : 
+                                      type === 'bar' ? chartColors.secondary : 'transparent',
+                        borderColor: chartColors.primary,
+                        borderWidth: 3,
+                        fill: type === 'area',
+                        tension: 0.4,
+                        pointBackgroundColor: chartColors.danger,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: chartColors.primary,
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Year'
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Value (mm)'
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeInOutQuart'
+                    }
+                }
+            };
+
+            try {
+                currentChart = new Chart(ctx, chartConfig);
+                
+                // Show canvas and hide loading
+                document.getElementById('interactiveChart').classList.remove('d-none');
+                document.querySelector('.loading-spinner').style.display = 'none';
+                
+                // Update chart title and show export controls
+                document.getElementById('chartTitle').innerHTML = `<i class="fas fa-chart-area"></i> ${title}`;
+                showExportControls();
+                updateMetrics(data);
+            } catch (error) {
+                console.error('Error creating chart:', error);
+                showStatus('Error creating chart: ' + error.message, 'danger');
+            }
+        }
+
+        // Year-wise chart generation
+        document.getElementById('generateYearWiseChart').addEventListener('click', function() {
+            const fromYear = document.getElementById('fromYear').value;
+            const toYear = document.getElementById('toYear').value;
+            const chartType = document.getElementById('chartType').value;
+            const dataMetric = document.getElementById('dataMetric').value;
+
+            if (!fromYear || !toYear) {
+                showStatus('Please specify both from and to years', 'warning');
+                return;
+            }
+
+            if (parseInt(fromYear) > parseInt(toYear)) {
+                showStatus('From year cannot be greater than to year', 'warning');
+                return;
+            }
+
+            showStatus('Generating year-wise chart...', 'info');
+
+            // Try Chart.js first, fallback to SVG charts if not available
+            if (typeof Chart !== 'undefined') {
+                // Fetch data from rainfall API for Chart.js
+                fetch(`/api/rainfallv2/data?startYear=${fromYear}&endYear=${toYear}&format=json`)
+                    .then(response => response.json())
+                    .then(data => {
+                        hideStatus();
+                        if (data && data.length > 0) {
+                            const title = `${dataMetric.charAt(0).toUpperCase() + dataMetric.slice(1)} Rainfall (${fromYear}-${toYear})`;
+                            createChart(data, chartType, title);
+                            showStatus('Chart generated successfully!', 'success');
+                        } else {
+                            showStatus('No data available for the selected year range', 'warning');
+                        }
+                    })
+                    .catch(error => {
+                        hideStatus();
+                        console.error('Error:', error);
+                        showStatus('Error generating chart: ' + error.message, 'danger');
+                    });
+            } else {
+                // Fallback to SVG chart using existing endpoints
+                fetch('/api/rainfallv2/charts/yearly-svg')
+                    .then(response => response.text())
+                    .then(html => {
+                        hideStatus();
+                        // Display the SVG chart
+                        document.getElementById('chartDisplayArea').innerHTML = html;
+                        document.getElementById('interactiveChart').classList.add('d-none');
+                        const title = `Year-wise Rainfall Analysis (${fromYear}-${toYear})`;
+                        document.getElementById('chartTitle').innerHTML = `<i class="fas fa-chart-line"></i> ${title}`;
+                        showExportControls();
+                        showStatus('Year-wise chart generated successfully!', 'success');
+                    })
+                    .catch(error => {
+                        hideStatus();
+                        console.error('Error:', error);
+                        showStatus('Error generating year-wise chart: ' + error.message, 'danger');
+                    });
+            }
+        });
+
+        // Offset chart generation
+        document.getElementById('generateOffsetChart').addEventListener('click', function() {
+            const monthOffset = document.getElementById('monthOffset').value;
+            const offsetYear = document.getElementById('offsetYear').value;
+            const comparisonType = document.getElementById('offsetComparisonType').value;
+
+            showStatus('Generating offset chart...', 'info');
+
+            let endpoint = '';
+            let title = '';
+
+            switch(comparisonType) {
+                case 'monthly':
+                    endpoint = `/api/rainfallv2/charts/monthly-trend?month=${monthOffset}`;
+                    title = `Monthly Trend Analysis - Month ${monthOffset}`;
+                    break;
+                case 'decade':
+                    // Convert month to decade offset (simplified)
+                    const decadeOffset = Math.floor((parseInt(monthOffset) - 1) / 12 * 10);
+                    endpoint = `/api/rainfallv2/charts/decade-offset?offset=${decadeOffset}`;
+                    title = `Decade Offset Comparison (Offset: ${decadeOffset})`;
+                    break;
+                case 'annual':
+                    endpoint = `/api/rainfallv2/charts/yearly-svg`;
+                    title = `Annual Pattern Offset Analysis`;
+                    break;
+            }
+
+            fetch(endpoint)
+                .then(response => response.text())
+                .then(html => {
+                    hideStatus();
+                    // Display the SVG chart
+                    document.getElementById('chartDisplayArea').innerHTML = html;
+                    document.getElementById('interactiveChart').classList.add('d-none');
+                    document.getElementById('chartTitle').innerHTML = `<i class="fas fa-arrows-alt-h"></i> ${title}`;
+                    showExportControls();
+                    showStatus('Offset chart generated successfully!', 'success');
+                })
+                .catch(error => {
+                    hideStatus();
+                    console.error('Error:', error);
+                    showStatus('Error generating offset chart: ' + error.message, 'danger');
+                });
+        });
+
+        // Export functions
+        function exportChart(format) {
+            if (!currentChart && !document.getElementById('chartDisplayArea').innerHTML.includes('svg')) {
+                showStatus('No chart available to export', 'warning');
+                return;
+            }
+
+            if (format === 'png') {
+                if (currentChart) {
+                    const url = currentChart.toBase64Image();
+                    const link = document.createElement('a');
+                    link.download = 'climate-chart.png';
+                    link.href = url;
+                    link.click();
+                    showStatus('Chart exported as PNG!', 'success');
+                } else {
+                    // For SVG charts, convert to canvas first
+                    if (typeof html2canvas !== 'undefined') {
+                        html2canvas(document.getElementById('chartDisplayArea')).then(canvas => {
+                            const url = canvas.toDataURL('image/png');
+                            const link = document.createElement('a');
+                            link.download = 'climate-chart.png';
+                            link.href = url;
+                            link.click();
+                            showStatus('Chart exported as PNG!', 'success');
+                        }).catch(error => {
+                            showStatus('Error exporting PNG: ' + error.message, 'danger');
+                        });
+                    } else {
+                        showStatus('Export functionality requires page refresh to load dependencies', 'warning');
+                    }
+                }
+            } else if (format === 'pdf') {
+                showStatus('PDF export functionality will be implemented', 'info');
+            }
+        }
+
+        function takeScreenshot() {
+            // Enhanced screenshot functionality
+            if (typeof html2canvas !== 'undefined') {
+                html2canvas(document.body, {
+                    height: window.innerHeight,
+                    width: window.innerWidth,
+                    useCORS: true
+                }).then(canvas => {
+                    const url = canvas.toDataURL('image/png');
+                    const link = document.createElement('a');
+                    link.download = 'climate-dashboard-screenshot.png';
+                    link.href = url;
+                    link.click();
+                    showStatus('Screenshot saved successfully!', 'success');
+                }).catch(error => {
+                    showStatus('Error taking screenshot: ' + error.message, 'danger');
+                });
+            } else {
+                showStatus('Screenshot functionality: Please use your browser\'s screenshot feature or browser extension', 'info');
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            showStatus('Climate Charts Dashboard loaded. Select options above to generate charts.', 'info');
+            setTimeout(hideStatus, 3000);
+        });
+    </script>
+</body>
+</html>

@@ -96,14 +96,20 @@ public class RainfallAnalyticsService {
         return html.toString();
     }
     /**
-     * Generate a decade-wise rainfall comparison chart with a user-defined offset.
-     * For example, offset=5 means intervals are 1905-1914, 1915-1924, etc.
-     * @param offset integer between 0 and 9
+     * Generate a bundled rainfall comparison chart with a user-defined offset and bundle size.
+     * For example, offset=5 and bundleSize=10 means intervals are 1905-1914, 1915-1924, etc.
+     * @param offset integer offset for the starting year
+     * @param bundleSize size of each bundle (default 10 for decades)
      * @return HTML string with SVG chart
      */
-    public String generateDecadeComparisonChartHtmlWithOffset(int offset) {
+    public String generateDecadeComparisonChartHtmlWithOffset(int offset, int bundleSize) {
         List<RainfallRecord> allData = rainfallDataService.getAllData();
-        if (offset < 0 || offset > 9) offset = 0;
+        
+        // Validate parameters
+        if (bundleSize < 1) bundleSize = 10; // Default to 10
+        if (bundleSize > 50) bundleSize = 50; // Maximum reasonable bundle size
+        if (offset < 0) offset = 0;
+        if (offset >= bundleSize) offset = offset % bundleSize;
 
         // Find min and max year
         int minYear = allData.stream().mapToInt(RainfallRecord::getYear).min().orElse(1901);
@@ -111,10 +117,10 @@ public class RainfallAnalyticsService {
 
         // Calculate intervals
         List<int[]> intervals = new ArrayList<>();
-        int start = minYear - ((minYear - offset) % 10);
-        if (start < minYear) start += 10;
-        for (int s = start; s <= maxYear; s += 10) {
-            int e = s + 9;
+        int start = minYear - ((minYear - offset) % bundleSize);
+        if (start < minYear) start += bundleSize;
+        for (int s = start; s <= maxYear; s += bundleSize) {
+            int e = s + bundleSize - 1;
             intervals.add(new int[]{s, Math.min(e, maxYear)});
         }
 
@@ -132,7 +138,8 @@ public class RainfallAnalyticsService {
 
         StringBuilder html = new StringBuilder();
         html.append("<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; margin: 20px 0;'>");
-        html.append("<h4>📊 Decade-wise Rainfall Comparison (Offset: ").append(offset).append(")</h4>");
+        String bundleDescription = bundleSize == 10 ? "Decade-wise" : bundleSize + "-Year Bundled";
+        html.append("<h4>📊 ").append(bundleDescription).append(" Rainfall Comparison (Offset: ").append(offset).append(")</h4>");
         html.append("<div style='position: relative; width: 100%; height: 400px; background: white; border: 1px solid #ddd; padding: 20px; box-sizing: border-box;'>");
         html.append("<svg width='100%' height='350' style='overflow: visible;'>");
 
@@ -197,6 +204,16 @@ public class RainfallAnalyticsService {
         return html.toString();
     }
     
+    /**
+     * Generate a decade-wise rainfall comparison chart with a user-defined offset.
+     * This is a backward compatibility method that defaults to 10-year bundles.
+     * @param offset integer offset for the starting year
+     * @return HTML string with SVG chart
+     */
+    public String generateDecadeComparisonChartHtmlWithOffset(int offset) {
+        return generateDecadeComparisonChartHtmlWithOffset(offset, 10);
+    }
+    
     public String generateMonthlyAverageChartHtml() {
         StringBuilder html = new StringBuilder();
         html.append("<div class='chart-container' style='margin: 20px 0;'>");
@@ -255,21 +272,35 @@ public class RainfallAnalyticsService {
     }
     
     public String generateDecadeComparisonChartHtml() {
+        return generateDecadeComparisonChartHtml(10);
+    }
+    
+    /**
+     * Generate a bundled rainfall comparison chart with configurable bundle size.
+     * @param bundleSize size of each bundle (default 10 for decades)
+     * @return HTML string with SVG chart
+     */
+    public String generateDecadeComparisonChartHtml(int bundleSize) {
         List<RainfallRecord> allData = rainfallDataService.getAllData();
         
-        // Group by decades
-        Map<String, List<Double>> decadeData = new TreeMap<>();
+        // Validate bundle size
+        if (bundleSize < 1) bundleSize = 10;
+        if (bundleSize > 50) bundleSize = 50;
+        
+        // Group by bundle periods
+        Map<String, List<Double>> bundleData = new TreeMap<>();
         for (RainfallRecord record : allData) {
-            int decade = (record.getYear() / 10) * 10;
-            String decadeLabel = decade + "s";
-            decadeData.computeIfAbsent(decadeLabel, k -> new ArrayList<>()).add(record.getTotal());
+            int bundleStart = (record.getYear() / bundleSize) * bundleSize;
+            String bundleLabel = bundleSize == 10 ? bundleStart + "s" : bundleStart + "-" + (bundleStart + bundleSize - 1);
+            bundleData.computeIfAbsent(bundleLabel, k -> new ArrayList<>()).add(record.getTotal());
         }
         
         StringBuilder html = new StringBuilder();
         
         // Generate SVG chart (no JavaScript required)
         html.append("<div style='padding: 20px; background: #f8f9fa; border-radius: 8px; margin: 20px 0;'>");
-        html.append("<h4>📊 Decade-wise Rainfall Comparison</h4>");
+        String bundleDescription = bundleSize == 10 ? "Decade-wise" : bundleSize + "-Year Bundled";
+        html.append("<h4>📊 ").append(bundleDescription).append(" Rainfall Comparison</h4>");
         html.append("<div style='position: relative; width: 100%; height: 400px; background: white; border: 1px solid #ddd; padding: 20px; box-sizing: border-box;'>");
         
         // SVG container
@@ -282,7 +313,7 @@ public class RainfallAnalyticsService {
         int spacing = 20;
         
         // Calculate max value for scaling
-        double maxValue = decadeData.values().stream()
+        double maxValue = bundleData.values().stream()
                 .mapToDouble(values -> values.stream().mapToDouble(Double::doubleValue).average().orElse(0.0))
                 .max().orElse(2000.0);
         
@@ -301,8 +332,8 @@ public class RainfallAnalyticsService {
         int index = 0;
         String[] colors = {"#3498db", "#e74c3c", "#2ecc71", "#f39c12", "#9b59b6", "#1abc9c", "#34495e", "#e67e22", "#95a5a6", "#f1c40f", "#8e44ad", "#27ae60", "#2980b9"};
         
-        for (Map.Entry<String, List<Double>> entry : decadeData.entrySet()) {
-            String decade = entry.getKey();
+        for (Map.Entry<String, List<Double>> entry : bundleData.entrySet()) {
+            String period = entry.getKey();
             double average = entry.getValue().stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
             int barHeight = (int) ((average / maxValue) * chartHeight);
             int barY = chartHeight - barHeight + 20;
@@ -317,9 +348,9 @@ public class RainfallAnalyticsService {
             html.append(String.format("<text x='%d' y='%d' text-anchor='middle' font-size='11' font-weight='bold' fill='#2c3e50'>%.0f</text>", 
                     x + barWidth/2, barY - 5, average));
             
-            // Draw decade label below bar
+            // Draw period label below bar
             html.append(String.format("<text x='%d' y='%d' text-anchor='middle' font-size='10' fill='#7f8c8d' transform='rotate(-45, %d, %d)'>%s</text>", 
-                    x + barWidth/2, chartHeight + 45, x + barWidth/2, chartHeight + 45, decade));
+                    x + barWidth/2, chartHeight + 45, x + barWidth/2, chartHeight + 45, period));
             
             x += barWidth + spacing;
             index++;
@@ -332,21 +363,23 @@ public class RainfallAnalyticsService {
         
         // Add axis labels
         html.append("<text x='25' y='160' text-anchor='middle' font-size='12' font-weight='bold' fill='#2c3e50' transform='rotate(-90, 25, 160)'>Rainfall (mm)</text>");
-        html.append("<text x='325' y='380' text-anchor='middle' font-size='12' font-weight='bold' fill='#2c3e50'>Decade</text>");
+        String xAxisLabel = bundleSize == 10 ? "Decade" : "Period";
+        html.append("<text x='325' y='380' text-anchor='middle' font-size='12' font-weight='bold' fill='#2c3e50'>").append(xAxisLabel).append("</text>");
         
         html.append("</svg>");
         html.append("</div>");
         
         // Add summary statistics
         html.append("<div style='margin-top: 15px; font-size: 14px; color: #7f8c8d;'>");
-        double maxAvg = decadeData.values().stream()
+        double maxAvg = bundleData.values().stream()
                 .mapToDouble(values -> values.stream().mapToDouble(Double::doubleValue).average().orElse(0.0))
                 .max().orElse(0.0);
-        double minAvg = decadeData.values().stream()
+        double minAvg = bundleData.values().stream()
                 .mapToDouble(values -> values.stream().mapToDouble(Double::doubleValue).average().orElse(0.0))
                 .min().orElse(0.0);
-        html.append(String.format("<strong>Summary:</strong> Highest decade: %.0f mm | Lowest decade: %.0f mm | Range: %.0f mm", 
-                maxAvg, minAvg, maxAvg - minAvg));
+        String periodDescription = bundleSize == 10 ? "decade" : "period";
+        html.append(String.format("<strong>Summary:</strong> Highest %s: %.0f mm | Lowest %s: %.0f mm | Range: %.0f mm", 
+                periodDescription, maxAvg, periodDescription, minAvg, maxAvg - minAvg));
         html.append("</div>");
         html.append("</div>");
         
